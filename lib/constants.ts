@@ -10,6 +10,8 @@ export const FMP_ENDPOINTS = {
     STOCK_NEWS: (symbol: string) => `/stock_news`,
     SEARCH: () => `/search`,
     MARKET_HOURS: () => `/market-hours`,
+    SP500_CONSTITUENT: () => `/sp500_constituent`,
+    BATCH_QUOTE: () => `/quote`,
 } as const;
 
 // Rate Limiting
