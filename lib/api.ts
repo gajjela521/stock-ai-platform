@@ -1,20 +1,10 @@
 import {
     FullAnalysis,
-    StockData,
-    FinancialMetric,
-    BalanceSheet,
-    Deal,
-    Prediction,
-    Ownership,
-    Competitor,
     MarketStatus,
-    FMPQuoteResponse,
-    FMPProfileResponse,
-    FMPMetricsResponse,
-    FMPBalanceSheetResponse,
-    FMPNewsResponse,
 } from "@/types";
-import { FMP_BASE_URL, FMP_ENDPOINTS, RATE_LIMIT, DEFAULTS, ERROR_MESSAGES } from "./constants";
+import { RATE_LIMIT, DEFAULTS } from "./constants";
+import { fetchStockDataFromAlphaVantage } from "./alphaVantageApi";
+import { getMockData, getDefaultMarketStatus } from "./mockData"; // Assuming mock data functions are in a separate file
 
 // ============================================================================
 // RATE LIMITING
@@ -498,16 +488,33 @@ const MOCK_DATA: Record<string, FullAnalysis> = {
 
 export async function fetchStockAnalysis(symbol: string): Promise<FullAnalysis | null> {
     if (!checkRateLimit()) {
-        throw new Error(ERROR_MESSAGES.RATE_LIMIT_EXCEEDED);
+        throw new Error("RATE_LIMIT_EXCEEDED");
     }
 
-    // Simulate API delay
+    const normalizedSymbol = symbol.toUpperCase();
+
+    // Try Alpha Vantage first (primary data source)
+    const alphaVantageKey = process.env.NEXT_PUBLIC_ALPHA_VANTAGE_API_KEY;
+    if (alphaVantageKey) {
+        console.log("🔄 Attempting to fetch from Alpha Vantage...");
+        try {
+            const { fetchStockDataFromAlphaVantage } = await import("./alphaVantageApi");
+            const alphaData = await fetchStockDataFromAlphaVantage(normalizedSymbol);
+            if (alphaData) {
+                console.log("✅ Using Alpha Vantage real-time data");
+                return alphaData;
+            }
+        } catch (error) {
+            console.warn("Alpha Vantage fetch failed:", error);
+        }
+    }
+
+    // Simulate API delay for mock data
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    const normalizedSymbol = symbol.toUpperCase();
     let marketStatus: MarketStatus[] = [];
 
-    // Try fetching real data first if key is present
+    // Try fetching FMP data as fallback (will likely fail with free tier)
     if (getApiKey()) {
         const [realData, statusData] = await Promise.all([
             fetchRealData(normalizedSymbol),
@@ -517,6 +524,7 @@ export async function fetchStockAnalysis(symbol: string): Promise<FullAnalysis |
         marketStatus = statusData;
 
         if (realData) {
+            console.log("✅ Using FMP data");
             return { ...realData, marketStatus };
         }
     }

@@ -21,11 +21,12 @@ export interface FinancialMetric {
 }
 
 export interface BalanceSheet {
-    totalAssets: number;
-    totalLiabilities: number;
-    totalEquity: number;
-    cashAndEquivalents: number;
-    longTermDebt: number;
+    totalAssets: number | string;
+    totalLiabilities: number | string;
+    totalEquity: number | string;
+    cashAndEquivalents: number | string;
+    longTermDebt?: number | string;
+    totalDebt?: number | string;
 }
 
 export interface Deal {
