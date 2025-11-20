@@ -16,7 +16,10 @@ interface DashboardProps {
 export function Dashboard({ data }: DashboardProps) {
     const { stock, financials, balanceSheet, deals, prediction, ownership, competitors } = data;
 
-    const formatCurrency = (val: number) => {
+    const formatCurrency = (val: number | string) => {
+        // If it's already a string (like "N/A"), return it
+        if (typeof val === "string") return val;
+
         return new Intl.NumberFormat("en-US", {
             style: "currency",
             currency: stock.currency,
@@ -105,17 +108,31 @@ export function Dashboard({ data }: DashboardProps) {
                     <h2 className="text-lg font-semibold text-indigo-900 dark:text-indigo-100">AI Analysis & Predictions</h2>
                 </div>
 
+                {/* AI Prediction */}
                 <Card className="border-2 border-indigo-100 dark:border-indigo-900 bg-gradient-to-br from-white to-indigo-50/50 dark:from-neutral-950 dark:to-indigo-950/30 shadow-lg">
                     <CardHeader>
                         <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <CardTitle className="text-xl text-indigo-900 dark:text-indigo-100">Next Quarter Forecast</CardTitle>
-                            </div>
-                            <Badge variant={prediction.marketTrend === "bullish" ? "success" : prediction.marketTrend === "bearish" ? "destructive" : "secondary"}>
-                                {prediction.marketTrend.toUpperCase()}
+                            <CardTitle className="flex items-center gap-2">
+                                <Target className="w-5 h-5 text-blue-600" />
+                                AI Prediction
+                            </CardTitle>
+                            <Badge variant="outline" className="text-xs">
+                                {(prediction.confidenceScore * 100).toFixed(0)}% Confidence
                             </Badge>
                         </div>
-                        <CardDescription>AI-generated predictions based on sentiment, historical data, and market trends.</CardDescription>
+                        <CardDescription className="flex items-center justify-between">
+                            <span>Next quarter forecast based on current data</span>
+                            {stock.lastUpdated && (
+                                <span className="text-xs text-neutral-400">
+                                    Generated {new Date(stock.lastUpdated).toLocaleDateString("en-US", {
+                                        month: "short",
+                                        day: "numeric",
+                                        hour: "numeric",
+                                        minute: "2-digit"
+                                    })}
+                                </span>
+                            )}
+                        </CardDescription>
                     </CardHeader>
                     <CardContent className="grid md:grid-cols-2 gap-6">
                         <div className="space-y-4">
@@ -204,13 +221,21 @@ export function Dashboard({ data }: DashboardProps) {
                                 <span className="font-medium">{formatCurrency(balanceSheet.totalEquity)}</span>
                             </div>
                             <div className="flex justify-between items-center py-2 border-b border-neutral-100 dark:border-neutral-800">
-                                <span className="text-neutral-600 dark:text-neutral-400">Cash & Eq.</span>
+                                <span className="text-neutral-600 dark:text-neutral-400">Cash & Equivalents</span>
                                 <span className="font-medium">{formatCurrency(balanceSheet.cashAndEquivalents)}</span>
                             </div>
-                            <div className="flex justify-between items-center py-2">
-                                <span className="text-neutral-600 dark:text-neutral-400">Long Term Debt</span>
-                                <span className="font-medium">{formatCurrency(balanceSheet.longTermDebt)}</span>
-                            </div>
+                            {balanceSheet.longTermDebt !== undefined && (
+                                <div className="flex justify-between items-center py-2">
+                                    <span className="text-neutral-600 dark:text-neutral-400">Long-term Debt</span>
+                                    <span className="font-medium">{formatCurrency(balanceSheet.longTermDebt)}</span>
+                                </div>
+                            )}
+                            {balanceSheet.totalDebt !== undefined && (
+                                <div className="flex justify-between items-center py-2">
+                                    <span className="text-neutral-600 dark:text-neutral-400">Total Debt</span>
+                                    <span className="font-medium">{formatCurrency(balanceSheet.totalDebt)}</span>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 </div>

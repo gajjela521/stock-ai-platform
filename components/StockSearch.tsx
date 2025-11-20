@@ -53,31 +53,75 @@ export function StockSearch() {
             // FMP Search API is not available on free tier (403 error)
             // Use local popular stocks list instead
             const popularStocks = [
+                // Tech Giants
                 { symbol: "AAPL", name: "Apple Inc.", exchange: "NASDAQ" },
                 { symbol: "MSFT", name: "Microsoft Corporation", exchange: "NASDAQ" },
-                { symbol: "GOOGL", name: "Alphabet Inc.", exchange: "NASDAQ" },
+                { symbol: "GOOGL", name: "Alphabet Inc. Class A", exchange: "NASDAQ" },
+                { symbol: "GOOG", name: "Alphabet Inc. Class C", exchange: "NASDAQ" },
                 { symbol: "AMZN", name: "Amazon.com Inc.", exchange: "NASDAQ" },
                 { symbol: "NVDA", name: "NVIDIA Corporation", exchange: "NASDAQ" },
                 { symbol: "META", name: "Meta Platforms Inc.", exchange: "NASDAQ" },
                 { symbol: "TSLA", name: "Tesla Inc.", exchange: "NASDAQ" },
-                { symbol: "BRK.B", name: "Berkshire Hathaway Inc.", exchange: "NYSE" },
+                { symbol: "AVGO", name: "Broadcom Inc.", exchange: "NASDAQ" },
+                { symbol: "ORCL", name: "Oracle Corporation", exchange: "NYSE" },
+                { symbol: "ADBE", name: "Adobe Inc.", exchange: "NASDAQ" },
+                { symbol: "CRM", name: "Salesforce Inc.", exchange: "NYSE" },
+                { symbol: "NFLX", name: "Netflix Inc.", exchange: "NASDAQ" },
+                { symbol: "AMD", name: "Advanced Micro Devices Inc.", exchange: "NASDAQ" },
+                { symbol: "INTC", name: "Intel Corporation", exchange: "NASDAQ" },
+                { symbol: "CSCO", name: "Cisco Systems Inc.", exchange: "NASDAQ" },
+                { symbol: "QCOM", name: "QUALCOMM Inc.", exchange: "NASDAQ" },
+
+                // Finance
+                { symbol: "BRK.B", name: "Berkshire Hathaway Inc. Class B", exchange: "NYSE" },
                 { symbol: "JPM", name: "JPMorgan Chase & Co.", exchange: "NYSE" },
                 { symbol: "V", name: "Visa Inc.", exchange: "NYSE" },
-                { symbol: "WMT", name: "Walmart Inc.", exchange: "NYSE" },
-                { symbol: "JNJ", name: "Johnson & Johnson", exchange: "NYSE" },
-                { symbol: "XOM", name: "Exxon Mobil Corporation", exchange: "NYSE" },
-                { symbol: "UNH", name: "UnitedHealth Group Inc.", exchange: "NYSE" },
                 { symbol: "MA", name: "Mastercard Inc.", exchange: "NYSE" },
-                { symbol: "PG", name: "Procter & Gamble Co.", exchange: "NYSE" },
+                { symbol: "BAC", name: "Bank of America Corp.", exchange: "NYSE" },
+                { symbol: "WFC", name: "Wells Fargo & Co.", exchange: "NYSE" },
+                { symbol: "GS", name: "Goldman Sachs Group Inc.", exchange: "NYSE" },
+                { symbol: "MS", name: "Morgan Stanley", exchange: "NYSE" },
+                { symbol: "AXP", name: "American Express Co.", exchange: "NYSE" },
+
+                // Consumer & Retail
+                { symbol: "WMT", name: "Walmart Inc.", exchange: "NYSE" },
+                { symbol: "COST", name: "Costco Wholesale Corporation", exchange: "NASDAQ" },
                 { symbol: "HD", name: "The Home Depot Inc.", exchange: "NYSE" },
-                { symbol: "CVX", name: "Chevron Corporation", exchange: "NYSE" },
+                { symbol: "MCD", name: "McDonald's Corporation", exchange: "NYSE" },
+                { symbol: "NKE", name: "NIKE Inc.", exchange: "NYSE" },
+                { symbol: "SBUX", name: "Starbucks Corporation", exchange: "NASDAQ" },
+                { symbol: "TGT", name: "Target Corporation", exchange: "NYSE" },
+                { symbol: "LOW", name: "Lowe's Companies Inc.", exchange: "NYSE" },
+
+                // Healthcare & Pharma
+                { symbol: "JNJ", name: "Johnson & Johnson", exchange: "NYSE" },
+                { symbol: "UNH", name: "UnitedHealth Group Inc.", exchange: "NYSE" },
+                { symbol: "PFE", name: "Pfizer Inc.", exchange: "NYSE" },
                 { symbol: "ABBV", name: "AbbVie Inc.", exchange: "NYSE" },
                 { symbol: "MRK", name: "Merck & Co. Inc.", exchange: "NYSE" },
+                { symbol: "LLY", name: "Eli Lilly and Co.", exchange: "NYSE" },
+                { symbol: "TMO", name: "Thermo Fisher Scientific Inc.", exchange: "NYSE" },
+
+                // Consumer Goods
+                { symbol: "PG", name: "Procter & Gamble Co.", exchange: "NYSE" },
                 { symbol: "KO", name: "The Coca-Cola Company", exchange: "NYSE" },
                 { symbol: "PEP", name: "PepsiCo Inc.", exchange: "NASDAQ" },
-                { symbol: "COST", name: "Costco Wholesale Corporation", exchange: "NASDAQ" },
-                { symbol: "AVGO", name: "Broadcom Inc.", exchange: "NASDAQ" },
-                { symbol: "ADBE", name: "Adobe Inc.", exchange: "NASDAQ" },
+
+                // Energy
+                { symbol: "XOM", name: "Exxon Mobil Corporation", exchange: "NYSE" },
+                { symbol: "CVX", name: "Chevron Corporation", exchange: "NYSE" },
+                { symbol: "COP", name: "ConocoPhillips", exchange: "NYSE" },
+
+                // Industrial
+                { symbol: "BA", name: "Boeing Co.", exchange: "NYSE" },
+                { symbol: "CAT", name: "Caterpillar Inc.", exchange: "NYSE" },
+                { symbol: "GE", name: "General Electric Co.", exchange: "NYSE" },
+
+                // Communication
+                { symbol: "DIS", name: "Walt Disney Co.", exchange: "NYSE" },
+                { symbol: "CMCSA", name: "Comcast Corporation", exchange: "NASDAQ" },
+                { symbol: "T", name: "AT&T Inc.", exchange: "NYSE" },
+                { symbol: "VZ", name: "Verizon Communications Inc.", exchange: "NYSE" },
             ];
 
             const filtered = popularStocks.filter(stock =>
