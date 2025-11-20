@@ -14,12 +14,21 @@ function AnalysisContent() {
     const symbol = searchParams.get("symbol");
     const [data, setData] = useState<FullAnalysis | null>(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const loadData = async () => {
             if (symbol) {
-                const result = await fetchStockAnalysis(symbol);
-                setData(result);
+                try {
+                    const result = await fetchStockAnalysis(symbol);
+                    setData(result);
+                } catch (err: any) {
+                    if (err.message === "RATE_LIMIT_EXCEEDED") {
+                        setError("Free limit reached. Please wait a minute before searching again.");
+                    } else {
+                        setError("Failed to fetch stock data. Please try again.");
+                    }
+                }
             }
             setLoading(false);
         };
@@ -30,6 +39,23 @@ function AnalysisContent() {
         return (
             <div className="min-h-screen flex items-center justify-center p-4 bg-neutral-50 dark:bg-neutral-950">
                 <div className="animate-pulse text-lg font-medium text-neutral-500">Analyzing Market Data...</div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-neutral-50 dark:bg-neutral-950">
+                <div className="bg-white dark:bg-neutral-900 p-8 rounded-xl shadow-lg text-center max-w-md border border-neutral-200 dark:border-neutral-800">
+                    <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span className="text-2xl">⚠️</span>
+                    </div>
+                    <h1 className="text-xl font-bold mb-2 text-neutral-900 dark:text-white">Access Limit Reached</h1>
+                    <p className="text-neutral-600 dark:text-neutral-400 mb-6">{error}</p>
+                    <Link href="/">
+                        <Button>Return Home</Button>
+                    </Link>
+                </div>
             </div>
         );
     }

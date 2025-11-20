@@ -330,9 +330,21 @@ async function fetchMarketStatus(): Promise<MarketStatus[]> {
     }
 }
 
+// Helper for deterministic random numbers based on string seed
+function getDeterministicRandom(seed: string) {
+    let hash = 0;
+    for (let i = 0; i < seed.length; i++) {
+        const char = seed.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32bit integer
+    }
+    const x = Math.sin(hash) * 10000;
+    return x - Math.floor(x);
+}
+
 export async function fetchStockAnalysis(symbol: string): Promise<FullAnalysis | null> {
     if (!checkRateLimit()) {
-        throw new Error("Rate limit exceeded. Please wait a minute.");
+        throw new Error("RATE_LIMIT_EXCEEDED");
     }
 
     // Simulate API delay
@@ -381,27 +393,35 @@ export async function fetchStockAnalysis(symbol: string): Promise<FullAnalysis |
         return { ...MOCK_DATA[normalizedSymbol], marketStatus };
     }
 
-    // Fallback for unknown stocks (generate random-ish data)
+    // Fallback for unknown stocks (generate deterministic mock data)
+    const seed = normalizedSymbol;
+    const rand = (offset: number = 0) => getDeterministicRandom(seed + offset);
+
+    const price = 50 + rand(1) * 950; // 50 - 1000
+    const change = (rand(2) * 20) - 10; // -10 to +10
+    const changePercent = (rand(3) * 10) - 5; // -5% to +5%
+    const marketCap = 1000000000 + rand(4) * 2000000000000; // 1B - 2T
+
     return {
         stock: {
             symbol: normalizedSymbol,
             companyName: `${normalizedSymbol} Corp`,
-            price: Math.random() * 1000,
-            change: Math.random() * 10 - 5,
-            changePercent: Math.random() * 5 - 2.5,
+            price: price,
+            change: parseFloat(change.toFixed(2)),
+            changePercent: parseFloat(changePercent.toFixed(2)),
             currency: "USD",
             exchange: "NYSE",
-            marketCap: Math.random() * 1000000000000,
+            marketCap: marketCap,
             sector: "Technology",
             industry: "Software",
             description: "A generic company description for demonstration purposes.",
             logoUrl: "",
         },
         financials: [
-            { label: "Revenue (TTM)", value: "$10.5B", trend: "up" },
-            { label: "Net Income", value: "$2.1B", trend: "up" },
-            { label: "P/E Ratio", value: 25.4, trend: "neutral" },
-            { label: "EPS", value: 4.20, trend: "up" },
+            { label: "Revenue (TTM)", value: `$${(10 + rand(5) * 100).toFixed(1)}B`, trend: rand(6) > 0.5 ? "up" : "down" },
+            { label: "Net Income", value: `$${(1 + rand(7) * 20).toFixed(1)}B`, trend: rand(8) > 0.5 ? "up" : "down" },
+            { label: "P/E Ratio", value: (10 + rand(9) * 50).toFixed(1), trend: "neutral" },
+            { label: "EPS", value: (1 + rand(10) * 10).toFixed(2), trend: "up" },
         ],
         balanceSheet: {
             totalAssets: 50000000000,
@@ -429,14 +449,14 @@ export async function fetchStockAnalysis(symbol: string): Promise<FullAnalysis |
         prediction: {
             nextQuarterRevenueForecast: 3000000000,
             nextQuarterEPSForecast: 1.10,
-            confidenceScore: 0.5,
+            confidenceScore: 0.5 + (rand(11) * 0.4),
             reasoning: [
                 "Insufficient data for accurate prediction.",
                 "General market sentiment is neutral.",
             ],
-            sentimentScore: 0,
-            marketTrend: "neutral",
-            priceTarget: Math.random() * 1000,
+            sentimentScore: (rand(12) * 2) - 1,
+            marketTrend: rand(13) > 0.6 ? "bullish" : rand(13) < 0.4 ? "bearish" : "neutral",
+            priceTarget: price * (0.8 + rand(14) * 0.4), // +/- 20%
             nextQuarterPositives: [
                 "Stable cash flow",
                 "Potential dividend increase",
