@@ -15,7 +15,7 @@ export function StockSearch() {
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
         if (symbol.trim()) {
-            router.push(`/analysis/${symbol.trim().toUpperCase()}?country=${country}`);
+            router.push(`/analysis?symbol=${symbol.trim().toUpperCase()}&country=${country}`);
         }
     };
 

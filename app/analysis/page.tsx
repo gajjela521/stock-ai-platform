@@ -5,30 +5,26 @@ import { fetchStockAnalysis } from "@/lib/api";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { FullAnalysis } from "@/types";
 
-interface PageProps {
-    params: {
-        symbol: string;
-    };
-}
-
-export default function AnalysisPage({ params }: PageProps) {
+function AnalysisContent() {
+    const searchParams = useSearchParams();
+    const symbol = searchParams.get("symbol");
     const [data, setData] = useState<FullAnalysis | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const loadData = async () => {
-            // In a real static export, params might be unavailable at build time for all paths.
-            // However, for client-side navigation in a SPA on GH Pages, this works.
-            // We use the mock API which is client-safe.
-            const result = await fetchStockAnalysis(params.symbol);
-            setData(result);
+            if (symbol) {
+                const result = await fetchStockAnalysis(symbol);
+                setData(result);
+            }
             setLoading(false);
         };
         loadData();
-    }, [params.symbol]);
+    }, [symbol]);
 
     if (loading) {
         return (
@@ -38,7 +34,7 @@ export default function AnalysisPage({ params }: PageProps) {
         );
     }
 
-    if (!data) {
+    if (!symbol || !data) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center p-4">
                 <h1 className="text-2xl font-bold mb-4">Stock Not Found</h1>
@@ -63,5 +59,13 @@ export default function AnalysisPage({ params }: PageProps) {
                 <Dashboard data={data} />
             </div>
         </div>
+    );
+}
+
+export default function AnalysisPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-pulse">Loading...</div></div>}>
+            <AnalysisContent />
+        </Suspense>
     );
 }
