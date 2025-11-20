@@ -2,36 +2,45 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Search } from "lucide-react";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
-import { POPULAR_STOCKS } from "@/lib/stocks";
+import { Search, TrendingUp, Globe } from "lucide-react";
+import { Button } from "./ui/Button";
+import { Card } from "./ui/Card";
+
+interface Suggestion {
+    symbol: string;
+    name: string;
+    exchange: string;
+}
 
 export function StockSearch() {
     const [symbol, setSymbol] = useState("");
-    const [country, setCountry] = useState("USA");
-    const [suggestions, setSuggestions] = useState<{ symbol: string, name: string }[]>([]);
+    const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
-    const wrapperRef = useRef<HTMLDivElement>(null);
+    const [selectedCountry, setSelectedCountry] = useState("USA");
     const router = useRouter();
+    const searchRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        function handleClickOutside(event: MouseEvent) {
-            if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
                 setShowSuggestions(false);
             }
-        }
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
         };
-    }, [wrapperRef]);
 
-    const handleSearch = (e: React.FormEvent) => {
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (selectedCountry !== "USA") {
+            alert("Currently only USA stocks are supported. Other countries coming soon!");
+            return;
+        }
+
         if (symbol.trim()) {
-            router.push(`/analysis?symbol=${symbol.trim().toUpperCase()}&country=${country}`);
+            router.push(`/stock/${symbol.toUpperCase()}`);
             setShowSuggestions(false);
         }
     };
@@ -40,7 +49,7 @@ export function StockSearch() {
         const value = e.target.value;
         setSymbol(value);
 
-        if (value.length > 0) {
+        if (value.length > 0 && selectedCountry === "USA") {
             // FMP Search API is not available on free tier (403 error)
             // Use local popular stocks list instead
             const popularStocks = [
@@ -83,68 +92,95 @@ export function StockSearch() {
         }
     };
 
-    const handleSuggestionClick = (selectedSymbol: string) => {
-        setSymbol(selectedSymbol);
-        setSuggestions([]);
+    const handleSuggestionClick = (suggestionSymbol: string) => {
+        if (selectedCountry !== "USA") {
+            alert("Currently only USA stocks are supported. Other countries coming soon!");
+            return;
+        }
+        setSymbol(suggestionSymbol);
         setShowSuggestions(false);
-        router.push(`/analysis?symbol=${selectedSymbol}&country=${country}`);
+        router.push(`/stock/${suggestionSymbol}`);
     };
 
+    const countries = [
+        { code: "USA", name: "United States", flag: "🇺🇸", available: true },
+        { code: "UK", name: "United Kingdom", flag: "🇬🇧", available: false },
+        { code: "IN", name: "India", flag: "🇮🇳", available: false },
+        { code: "CN", name: "China", flag: "🇨🇳", available: false },
+        { code: "JP", name: "Japan", flag: "🇯🇵", available: false },
+        { code: "DE", name: "Germany", flag: "🇩🇪", available: false },
+    ];
+
     return (
-        <Card className="w-full max-w-md mx-auto shadow-lg border-neutral-200 dark:border-neutral-800 overflow-visible z-50">
-            <CardHeader className="text-center">
-                <CardTitle className="text-2xl font-serif">Market Intelligence</CardTitle>
-                <CardDescription>
-                    Enter a company name or ticker to access AI-powered analysis.
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <form onSubmit={handleSearch} className="space-y-4">
-                    <div className="flex space-x-2 relative" ref={wrapperRef}>
-                        <select
-                            className="flex h-10 w-24 items-center justify-between rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-neutral-950 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-neutral-800 dark:bg-neutral-950 dark:ring-offset-neutral-950 dark:placeholder:text-neutral-400 dark:focus:ring-neutral-300"
-                            value={country}
-                            onChange={(e) => setCountry(e.target.value)}
-                        >
-                            <option value="USA">USA</option>
-                            <option value="UK">UK</option>
-                            <option value="India">India</option>
-                            <option value="Canada">Canada</option>
-                            <option value="Germany">Germany</option>
-                        </select>
-                        <div className="relative flex-1">
-                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-neutral-500 dark:text-neutral-400" />
-                            <Input
-                                className="pl-9"
-                                placeholder="Symbol (e.g., AAPL)"
+        <Card className="p-6 shadow-lg">
+            <div className="space-y-4">
+                {/* Country Selector */}
+                <div>
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                        <Globe className="w-4 h-4 inline mr-2" />
+                        Select Market
+                    </label>
+                    <div className="grid grid-cols-3 gap-2">
+                        {countries.map((country) => (
+                            <button
+                                key={country.code}
+                                onClick={() => {
+                                    if (country.available) {
+                                        setSelectedCountry(country.code);
+                                    } else {
+                                        alert(`${country.name} market coming soon!`);
+                                    }
+                                }}
+                                disabled={!country.available}
+                                className={`
+                                    relative p-3 rounded-lg border-2 transition-all
+                                    ${selectedCountry === country.code
+                                        ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                                        : "border-neutral-200 dark:border-neutral-700 hover:border-neutral-300"
+                                    }
+                                    ${!country.available
+                                        ? "opacity-50 cursor-not-allowed"
+                                        : "cursor-pointer"
+                                    }
+                                `}
+                            >
+                                <div className="text-2xl mb-1">{country.flag}</div>
+                                <div className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                                    {country.code}
+                                </div>
+                                {!country.available && (
+                                    <div className="absolute top-1 right-1 text-[10px] bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 px-1 rounded">
+                                        Soon
+                                    </div>
+                                )}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Search Input */}
+                <div className="relative" ref={searchRef}>
+                    <form onSubmit={handleSubmit}>
+                        <div className="relative">
+                            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-neutral-400 w-5 h-5" />
+                            <input
+                                type="text"
                                 value={symbol}
                                 onChange={handleInputChange}
-                                onFocus={() => symbol.length > 0 && setShowSuggestions(true)}
+                                onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+                                placeholder={selectedCountry === "USA" ? "Search stocks (e.g., AAPL, MSFT)..." : "Select USA market to search"}
+                                disabled={selectedCountry !== "USA"}
+                                className="w-full pl-12 pr-4 py-4 text-lg border-2 border-neutral-200 dark:border-neutral-700 rounded-lg focus:border-blue-500 focus:outline-none bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                             />
-                            {showSuggestions && suggestions.length > 0 && (
-                                <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-md shadow-lg z-50 max-h-60 overflow-auto">
-                                    {suggestions.map((suggestion) => (
-                                        <div
-                                            key={suggestion.symbol}
-                                            className="px-4 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer flex justify-between items-center"
-                                            onClick={() => handleSuggestionClick(suggestion.symbol)}
-                                        >
-                                            <div className="flex flex-col items-start">
-                                                <span className="font-medium">{suggestion.symbol}</span>
-                                                <span className="text-xs text-neutral-400">{(suggestion as any).exchange}</span>
-                                            </div>
-                                            <span className="text-sm text-neutral-500 truncate ml-2">{suggestion.name}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
                         </div>
-                    </div>
-                    <Button type="submit" className="w-full bg-neutral-900 hover:bg-neutral-800 text-white">
-                        Analyze Stock
-                    </Button>
-                </form>
-            </CardContent>
-        </Card>
+                            )}
+                </div>
+            </div>
+            <Button type="submit" className="w-full bg-neutral-900 hover:bg-neutral-800 text-white">
+                Analyze Stock
+            </Button>
+        </form>
+            </CardContent >
+        </Card >
     );
 }
