@@ -41,32 +41,41 @@ export function StockSearch() {
         setSymbol(value);
 
         if (value.length > 0) {
-            // Try fetching from FMP API first if key is available
-            const apiKey = process.env.NEXT_PUBLIC_FMP_API_KEY;
-            if (apiKey) {
-                try {
-                    const res = await fetch(`https://financialmodelingprep.com/api/v3/search?query=${value}&limit=10&apikey=${apiKey}`);
-                    const data = await res.json();
-                    if (data && Array.isArray(data)) {
-                        setSuggestions(data.map((item: any) => ({
-                            symbol: item.symbol,
-                            name: item.name,
-                            exchange: item.stockExchange
-                        })));
-                        setShowSuggestions(true);
-                        return;
-                    }
-                } catch (err) {
-                    console.error("Failed to fetch suggestions", err);
-                }
-            }
+            // FMP Search API is not available on free tier (403 error)
+            // Use local popular stocks list instead
+            const popularStocks = [
+                { symbol: "AAPL", name: "Apple Inc.", exchange: "NASDAQ" },
+                { symbol: "MSFT", name: "Microsoft Corporation", exchange: "NASDAQ" },
+                { symbol: "GOOGL", name: "Alphabet Inc.", exchange: "NASDAQ" },
+                { symbol: "AMZN", name: "Amazon.com Inc.", exchange: "NASDAQ" },
+                { symbol: "NVDA", name: "NVIDIA Corporation", exchange: "NASDAQ" },
+                { symbol: "META", name: "Meta Platforms Inc.", exchange: "NASDAQ" },
+                { symbol: "TSLA", name: "Tesla Inc.", exchange: "NASDAQ" },
+                { symbol: "BRK.B", name: "Berkshire Hathaway Inc.", exchange: "NYSE" },
+                { symbol: "JPM", name: "JPMorgan Chase & Co.", exchange: "NYSE" },
+                { symbol: "V", name: "Visa Inc.", exchange: "NYSE" },
+                { symbol: "WMT", name: "Walmart Inc.", exchange: "NYSE" },
+                { symbol: "JNJ", name: "Johnson & Johnson", exchange: "NYSE" },
+                { symbol: "XOM", name: "Exxon Mobil Corporation", exchange: "NYSE" },
+                { symbol: "UNH", name: "UnitedHealth Group Inc.", exchange: "NYSE" },
+                { symbol: "MA", name: "Mastercard Inc.", exchange: "NYSE" },
+                { symbol: "PG", name: "Procter & Gamble Co.", exchange: "NYSE" },
+                { symbol: "HD", name: "The Home Depot Inc.", exchange: "NYSE" },
+                { symbol: "CVX", name: "Chevron Corporation", exchange: "NYSE" },
+                { symbol: "ABBV", name: "AbbVie Inc.", exchange: "NYSE" },
+                { symbol: "MRK", name: "Merck & Co. Inc.", exchange: "NYSE" },
+                { symbol: "KO", name: "The Coca-Cola Company", exchange: "NYSE" },
+                { symbol: "PEP", name: "PepsiCo Inc.", exchange: "NASDAQ" },
+                { symbol: "COST", name: "Costco Wholesale Corporation", exchange: "NASDAQ" },
+                { symbol: "AVGO", name: "Broadcom Inc.", exchange: "NASDAQ" },
+                { symbol: "ADBE", name: "Adobe Inc.", exchange: "NASDAQ" },
+            ];
 
-            // Fallback to local popular stocks
-            const filtered = POPULAR_STOCKS.filter(stock =>
+            const filtered = popularStocks.filter(stock =>
                 stock.symbol.toLowerCase().includes(value.toLowerCase()) ||
                 stock.name.toLowerCase().includes(value.toLowerCase())
-            ).slice(0, 5);
-            setSuggestions(filtered);
+            );
+            setSuggestions(filtered.slice(0, 10));
             setShowSuggestions(true);
         } else {
             setSuggestions([]);
