@@ -1,4 +1,5 @@
 import { StockSearch } from "@/components/StockSearch";
+import { APIUsageDisplay } from "@/components/APIUsageDisplay";
 import Link from "next/link";
 import { TrendingUp } from "lucide-react";
 
@@ -19,6 +20,11 @@ export default function Home() {
           {/* Search Card */}
           <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 delay-150">
             <StockSearch />
+          </div>
+
+          {/* API Usage Display */}
+          <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200">
+            <APIUsageDisplay />
           </div>
 
           {/* Market Overview Link */}
