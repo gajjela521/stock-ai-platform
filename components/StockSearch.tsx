@@ -173,14 +173,53 @@ export function StockSearch() {
                                 className="w-full pl-12 pr-4 py-4 text-lg border-2 border-neutral-200 dark:border-neutral-700 rounded-lg focus:border-blue-500 focus:outline-none bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                             />
                         </div>
-                            )}
+
+                        {showSuggestions && suggestions.length > 0 && selectedCountry === "USA" && (
+                            <div className="absolute z-10 w-full mt-2 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-xl max-h-64 overflow-y-auto">
+                                {suggestions.map((suggestion) => (
+                                    <button
+                                        key={suggestion.symbol}
+                                        type="button"
+                                        onClick={() => handleSuggestionClick(suggestion.symbol)}
+                                        className="w-full px-4 py-3 text-left hover:bg-neutral-50 dark:hover:bg-neutral-700 border-b border-neutral-100 dark:border-neutral-700 last:border-b-0 transition-colors"
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <div className="font-semibold text-neutral-900 dark:text-white">
+                                                    {suggestion.symbol}
+                                                </div>
+                                                <div className="text-sm text-neutral-600 dark:text-neutral-400">
+                                                    {suggestion.name}
+                                                </div>
+                                            </div>
+                                            <div className="text-xs text-neutral-500 dark:text-neutral-400">
+                                                {suggestion.exchange}
+                                            </div>
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+
+                        <Button
+                            type="submit"
+                            className="w-full mt-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-4 text-lg font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled={selectedCountry !== "USA"}
+                        >
+                            <TrendingUp className="w-5 h-5 mr-2 inline" />
+                            Analyze Stock
+                        </Button>
+                    </form>
                 </div>
+
+                {selectedCountry !== "USA" && (
+                    <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                        <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                            <strong>Coming Soon:</strong> {countries.find(c => c.code === selectedCountry)?.name} market support is in progress. Currently only USA stocks are available.
+                        </p>
+                    </div>
+                )}
             </div>
-            <Button type="submit" className="w-full bg-neutral-900 hover:bg-neutral-800 text-white">
-                Analyze Stock
-            </Button>
-        </form>
-            </CardContent >
-        </Card >
+        </Card>
     );
 }
