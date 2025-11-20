@@ -1,36 +1,34 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI Stock Analysis Platform
 
-## Getting Started
+A premium, AI-powered stock analysis platform built with Next.js, TypeScript, and Tailwind CSS.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **AI Market Predictions**: Next-quarter revenue/EPS forecasts and sentiment analysis.
+- **Live Market Data**: Real-time price, change, and key financial metrics.
+- **Global Market Status**: Live status (Open/Closed) for major exchanges worldwide.
+- **Ownership Analysis**: Breakdown of retail vs. institutional ownership.
+- **Competitor Comparison**: Quick view of key competitors and their performance.
+- **Smart Search**: Autocomplete for top 50 popular stocks.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Data Sources
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Financial Modeling Prep (FMP)**: [Developer Dashboard](https://site.financialmodelingprep.com/developer/docs/dashboard)
+- **Mock Data**: Fallback for development and testing without an API key.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Tech Stack
 
-## Learn More
+- **Framework**: Next.js 14 (App Router)
+- **Styling**: Tailwind CSS
+- **Icons**: Lucide React
+- **Deployment**: GitHub Pages via GitHub Actions
 
-To learn more about Next.js, take a look at the following resources:
+## Setup
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Clone the repository.
+2. Install dependencies: `npm install`
+3. Create `.env.local` and add your FMP API Key:
+   ```bash
+   NEXT_PUBLIC_FMP_API_KEY=your_api_key_here
+   ```
+4. Run development server: `npm run dev`

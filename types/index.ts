@@ -60,6 +60,12 @@ export interface Prediction {
     nextQuarterPositives: string[];
 }
 
+export interface MarketStatus {
+    exchange: string;
+    status: string; // "open" | "closed"
+    timezone: string;
+}
+
 export interface FullAnalysis {
     stock: StockData;
     financials: FinancialMetric[];
@@ -68,4 +74,5 @@ export interface FullAnalysis {
     prediction: Prediction;
     ownership: Ownership;
     competitors: Competitor[];
+    marketStatus: MarketStatus[];
 }

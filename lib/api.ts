@@ -100,6 +100,7 @@ async function fetchRealData(symbol: string): Promise<FullAnalysis | null> {
                 insiderPercentage: 0,
             },
             competitors: [],
+            marketStatus: [], // Populated later in fetchStockAnalysis
         };
 
     } catch (error) {
@@ -190,6 +191,23 @@ const MOCK_DATA: Record<string, FullAnalysis> = {
             { symbol: "GOOGL", name: "Alphabet", price: 175.30, changePercent: -0.5 },
             { symbol: "SAMSUNG", name: "Samsung", price: 1100.00, changePercent: 1.2 },
         ],
+        marketStatus: [
+            { exchange: "NASDAQ", status: "closed", timezone: "EST" },
+            { exchange: "NYSE", status: "closed", timezone: "EST" },
+            { exchange: "AMEX", status: "closed", timezone: "EST" },
+            { exchange: "TSX", status: "closed", timezone: "EST" },
+            { exchange: "TSXV", status: "closed", timezone: "EST" },
+            { exchange: "LSE", status: "closed", timezone: "GMT" },
+            { exchange: "XETRA", status: "closed", timezone: "CET" },
+            { exchange: "EURONEXT", status: "closed", timezone: "CET" },
+            { exchange: "BRU", status: "closed", timezone: "CET" },
+            { exchange: "AMS", status: "closed", timezone: "CET" },
+            { exchange: "BSE", status: "closed", timezone: "IST" },
+            { exchange: "JPX", status: "open", timezone: "JST" },
+            { exchange: "HKSE", status: "open", timezone: "HKT" },
+            { exchange: "SHZ", status: "open", timezone: "CST" },
+            { exchange: "ASX", status: "open", timezone: "AEST" },
+        ]
     },
     TSLA: {
         stock: {
@@ -263,8 +281,54 @@ const MOCK_DATA: Record<string, FullAnalysis> = {
             { symbol: "RIVN", name: "Rivian", price: 10.20, changePercent: -4.5 },
             { symbol: "F", name: "Ford", price: 12.10, changePercent: 0.5 },
         ],
+        marketStatus: [
+            { exchange: "NASDAQ", status: "closed", timezone: "EST" },
+            { exchange: "NYSE", status: "closed", timezone: "EST" },
+            { exchange: "AMEX", status: "closed", timezone: "EST" },
+            { exchange: "TSX", status: "closed", timezone: "EST" },
+            { exchange: "TSXV", status: "closed", timezone: "EST" },
+            { exchange: "LSE", status: "closed", timezone: "GMT" },
+            { exchange: "XETRA", status: "closed", timezone: "CET" },
+            { exchange: "EURONEXT", status: "closed", timezone: "CET" },
+            { exchange: "BRU", status: "closed", timezone: "CET" },
+            { exchange: "AMS", status: "closed", timezone: "CET" },
+            { exchange: "BSE", status: "closed", timezone: "IST" },
+            { exchange: "JPX", status: "open", timezone: "JST" },
+            { exchange: "HKSE", status: "open", timezone: "HKT" },
+            { exchange: "SHZ", status: "open", timezone: "CST" },
+            { exchange: "ASX", status: "open", timezone: "AEST" },
+        ]
     },
 };
+
+// ... previous imports
+import { MarketStatus } from "@/types";
+
+// ... existing code ...
+
+async function fetchMarketStatus(): Promise<MarketStatus[]> {
+    if (!FMP_API_KEY) return [];
+
+    try {
+        const res = await fetch(`${BASE_URL}/is-the-market-open?apikey=${FMP_API_KEY}`);
+        const data = await res.json();
+
+        if (data && data.isTheStockMarketOpen) {
+            // Map FMP response to our simplified structure
+            // FMP returns specific exchanges, we need to map them or pass them through
+            // For simplicity in this demo, we map the known ones from the user request
+            return data.isTheStockMarketOpen.map((m: any) => ({
+                exchange: m.exchange,
+                status: m.isTheStockMarketOpen ? "open" : "closed",
+                timezone: "UTC" // Simplified
+            }));
+        }
+        return [];
+    } catch (e) {
+        console.error("Error fetching market status", e);
+        return [];
+    }
+}
 
 export async function fetchStockAnalysis(symbol: string): Promise<FullAnalysis | null> {
     if (!checkRateLimit()) {
@@ -275,16 +339,46 @@ export async function fetchStockAnalysis(symbol: string): Promise<FullAnalysis |
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     const normalizedSymbol = symbol.toUpperCase();
+    let marketStatus: MarketStatus[] = [];
 
     // Try fetching real data first if key is present
     if (FMP_API_KEY) {
-        const realData = await fetchRealData(normalizedSymbol);
-        if (realData) return realData;
+        const [realData, statusData] = await Promise.all([
+            fetchRealData(normalizedSymbol),
+            fetchMarketStatus()
+        ]);
+
+        marketStatus = statusData;
+
+        if (realData) {
+            return { ...realData, marketStatus };
+        }
+    }
+
+    // Mock Market Status if no key or fetch failed
+    if (marketStatus.length === 0) {
+        marketStatus = [
+            { exchange: "NASDAQ", status: "closed", timezone: "EST" },
+            { exchange: "NYSE", status: "closed", timezone: "EST" },
+            { exchange: "AMEX", status: "closed", timezone: "EST" },
+            { exchange: "TSX", status: "closed", timezone: "EST" },
+            { exchange: "TSXV", status: "closed", timezone: "EST" },
+            { exchange: "LSE", status: "closed", timezone: "GMT" },
+            { exchange: "XETRA", status: "closed", timezone: "CET" },
+            { exchange: "EURONEXT", status: "closed", timezone: "CET" },
+            { exchange: "BRU", status: "closed", timezone: "CET" },
+            { exchange: "AMS", status: "closed", timezone: "CET" },
+            { exchange: "BSE", status: "closed", timezone: "IST" },
+            { exchange: "JPX", status: "open", timezone: "JST" },
+            { exchange: "HKSE", status: "open", timezone: "HKT" },
+            { exchange: "SHZ", status: "open", timezone: "CST" },
+            { exchange: "ASX", status: "open", timezone: "AEST" },
+        ];
     }
 
     // Return mock data if available
     if (MOCK_DATA[normalizedSymbol]) {
-        return MOCK_DATA[normalizedSymbol];
+        return { ...MOCK_DATA[normalizedSymbol], marketStatus };
     }
 
     // Fallback for unknown stocks (generate random-ish data)
@@ -357,5 +451,6 @@ export async function fetchStockAnalysis(symbol: string): Promise<FullAnalysis |
             { symbol: "COMP1", name: "Competitor A", price: 150.00, changePercent: 1.5 },
             { symbol: "COMP2", name: "Competitor B", price: 200.00, changePercent: -0.8 },
         ],
+        marketStatus,
     };
 }

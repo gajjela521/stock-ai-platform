@@ -7,6 +7,7 @@ import { ArrowUpRight, ArrowDownRight, Minus, TrendingUp, TrendingDown, DollarSi
 import { cn } from "@/lib/utils";
 import { OwnershipCard } from "./OwnershipCard";
 import { CompetitorList } from "./CompetitorList";
+import { MarketStatusCard } from "./MarketStatusCard";
 
 interface DashboardProps {
     data: FullAnalysis;
@@ -156,6 +157,7 @@ export function Dashboard({ data }: DashboardProps) {
 
             <div className="grid md:grid-cols-3 gap-8">
                 <div className="space-y-8">
+                    <MarketStatusCard data={data.marketStatus} />
                     <OwnershipCard data={ownership} />
                     <CompetitorList competitors={competitors} />
 
