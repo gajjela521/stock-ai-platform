@@ -13,7 +13,7 @@ export const FMP_ENDPOINTS = {
     SP500_CONSTITUENT: () => `/sp500_constituent`,
     BATCH_QUOTE: () => `/quote`,
     INSTITUTIONAL_HOLDERS: (symbol: string) => `/institutional-holder/${symbol}`,
-    STOCK_PEERS: (symbol: string) => `/stock_peers`,
+    STOCK_PEERS: () => `/stock_peers`,
 } as const;
 
 // Rate Limiting
