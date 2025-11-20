@@ -157,7 +157,7 @@ async function fetchInstitutionalHolders(symbol: string): Promise<any[]> {
 }
 
 async function fetchStockPeers(symbol: string): Promise<any> {
-    const url = buildUrl(FMP_ENDPOINTS.STOCK_PEERS()) + `?symbol=${symbol}`;
+    const url = buildUrl(FMP_ENDPOINTS.STOCK_PEERS()) + `&symbol=${symbol}`;
     const data = await fetchAPI<any>(url);
     return data || null;
 }
