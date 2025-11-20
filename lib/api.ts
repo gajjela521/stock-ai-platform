@@ -150,6 +150,18 @@ async function fetchMarketHours(): Promise<MarketStatus[]> {
     }
 }
 
+async function fetchInstitutionalHolders(symbol: string): Promise<any[]> {
+    const url = buildUrl(FMP_ENDPOINTS.INSTITUTIONAL_HOLDERS(symbol));
+    const data = await fetchAPI<any[]>(url);
+    return data || [];
+}
+
+async function fetchStockPeers(symbol: string): Promise<any> {
+    const url = buildUrl(FMP_ENDPOINTS.STOCK_PEERS()) + `?symbol=${symbol}`;
+    const data = await fetchAPI<any>(url);
+    return data || null;
+}
+
 // ============================================================================
 // DATA TRANSFORMATION
 // ============================================================================
@@ -250,6 +262,73 @@ function determineSentiment(text: string): "positive" | "negative" | "neutral" {
     return "neutral";
 }
 
+function transformToOwnership(holders: any[]): { retailPercentage: number; institutionalPercentage: number; insiderPercentage: number } {
+    if (!holders || holders.length === 0) {
+        return {
+            retailPercentage: 50,
+            institutionalPercentage: 50,
+            insiderPercentage: 0,
+        };
+    }
+
+    // Calculate total shares held by institutions
+    const totalInstitutionalShares = holders.reduce((sum, holder) => sum + (holder.shares || 0), 0);
+
+    // Get the first holder's data to find total shares outstanding
+    const totalShares = holders[0]?.totalShares || 1;
+
+    // Calculate institutional percentage
+    const institutionalPercentage = Math.min(100, (totalInstitutionalShares / totalShares) * 100);
+
+    // Estimate insider and retail (simplified)
+    const insiderPercentage = Math.min(20, 100 - institutionalPercentage);
+    const retailPercentage = Math.max(0, 100 - institutionalPercentage - insiderPercentage);
+
+    return {
+        retailPercentage: parseFloat(retailPercentage.toFixed(1)),
+        institutionalPercentage: parseFloat(institutionalPercentage.toFixed(1)),
+        insiderPercentage: parseFloat(insiderPercentage.toFixed(1)),
+    };
+}
+
+async function transformToCompetitors(peersData: any, symbol: string): Promise<Competitor[]> {
+    if (!peersData || !peersData.peersList || peersData.peersList.length === 0) {
+        return [];
+    }
+
+    // Get peer symbols (filter out the current symbol)
+    const peerSymbols = peersData.peersList
+        .filter((peer: string) => peer !== symbol)
+        .slice(0, 5); // Limit to 5 competitors
+
+    if (peerSymbols.length === 0) return [];
+
+    try {
+        // Fetch quotes for all peers
+        const apiKey = getApiKey();
+        if (!apiKey) return [];
+
+        const symbolList = peerSymbols.join(",");
+        const url = buildUrl(FMP_ENDPOINTS.BATCH_QUOTE()) + `/${symbolList}`;
+        const quotes = await fetchAPI<any[]>(url);
+
+        if (!quotes || quotes.length === 0) return [];
+
+        return quotes.map(quote => ({
+            symbol: quote.symbol,
+            name: quote.name || quote.symbol,
+            price: quote.price || 0,
+            changePercent: quote.changesPercentage || 0,
+            marketCap: quote.marketCap || 0,
+        })).filter(comp => comp.marketCap > 0);
+    } catch (error) {
+        console.error("Error fetching competitor data:", error);
+        return [];
+    }
+}
+
+// ============================================================================
+
 function calculatePrediction(
     quote: FMPQuoteResponse,
     metrics: FMPMetricsResponse | null
@@ -310,15 +389,23 @@ async function fetchRealData(symbol: string): Promise<FullAnalysis | null> {
 
     try {
         // Fetch all data in parallel
-        const [quote, profile, metrics, balanceSheet, news] = await Promise.all([
+        const [quote, profile, metrics, balanceSheet, news, institutionalHolders, stockPeers] = await Promise.all([
             fetchQuoteData(symbol),
             fetchProfileData(symbol),
             fetchMetricsData(symbol),
             fetchBalanceSheetData(symbol),
             fetchNewsData(symbol),
+            fetchInstitutionalHolders(symbol),
+            fetchStockPeers(symbol),
         ]);
 
         if (!quote) return null;
+
+        // Transform ownership data
+        const ownership = transformToOwnership(institutionalHolders);
+
+        // Transform competitors data
+        const competitors = await transformToCompetitors(stockPeers, symbol);
 
         return {
             stock: transformToStockData(quote, profile),
@@ -326,12 +413,8 @@ async function fetchRealData(symbol: string): Promise<FullAnalysis | null> {
             balanceSheet: transformToBalanceSheet(balanceSheet),
             deals: transformToDeals(news),
             prediction: calculatePrediction(quote, metrics),
-            ownership: {
-                retailPercentage: 50,
-                institutionalPercentage: 50,
-                insiderPercentage: 0,
-            },
-            competitors: [],
+            ownership,
+            competitors,
             marketStatus: [],
         };
     } catch (error) {

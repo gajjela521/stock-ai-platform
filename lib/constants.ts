@@ -12,6 +12,8 @@ export const FMP_ENDPOINTS = {
     MARKET_HOURS: () => `/market-hours`,
     SP500_CONSTITUENT: () => `/sp500_constituent`,
     BATCH_QUOTE: () => `/quote`,
+    INSTITUTIONAL_HOLDERS: (symbol: string) => `/institutional-holder/${symbol}`,
+    STOCK_PEERS: (symbol: string) => `/stock_peers`,
 } as const;
 
 // Rate Limiting
