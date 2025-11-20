@@ -51,6 +51,40 @@ export default function Home() {
               </div>
             </Link>
           </div>
+
+          {/* Service Status Link */}
+          <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 delay-400">
+            <Link href="/service-status">
+              <div className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-lg px-6 py-4 shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer group">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Service Status
+                    </h3>
+                    <p className="text-sm text-emerald-100 mt-1">
+                      Monitor API health and performance
+                    </p>
+                  </div>
+                  <svg
+                    className="w-6 h-6 transform group-hover:translate-x-1 transition-transform"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </Link>
+          </div>
         </div>
 
         <div className="mt-16 text-center animate-in fade-in duration-700 delay-500">
