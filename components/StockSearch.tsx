@@ -40,7 +40,7 @@ export function StockSearch() {
         }
 
         if (symbol.trim()) {
-            router.push(`/stock/${symbol.toUpperCase()}`);
+            router.push(`/analysis?symbol=${symbol.toUpperCase()}`);
             setShowSuggestions(false);
         }
     };
@@ -143,7 +143,7 @@ export function StockSearch() {
         }
         setSymbol(suggestionSymbol);
         setShowSuggestions(false);
-        router.push(`/stock/${suggestionSymbol}`);
+        router.push(`/analysis?symbol=${suggestionSymbol}`);
     };
 
     const countries = [
