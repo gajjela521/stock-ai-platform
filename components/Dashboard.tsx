@@ -54,10 +54,22 @@ export function Dashboard({ data }: DashboardProps) {
                         {stock.change >= 0 ? <ArrowUpRight className="w-5 h-5" /> : <ArrowDownRight className="w-5 h-5" />}
                         {stock.change > 0 ? "+" : ""}{stock.change} ({stock.changePercent}%)
                     </div>
-                    <div className="mt-2 flex justify-end">
+                    <div className="mt-2 flex flex-col items-end gap-1">
                         <Badge variant="outline" className="text-xs font-normal text-neutral-500">
                             {data.financials.length > 0 && data.financials[0].value !== "N/A" ? "Live Data" : "Simulated Data"}
                         </Badge>
+                        {stock.lastUpdated && (
+                            <span className="text-xs text-neutral-400">
+                                As of {new Date(stock.lastUpdated).toLocaleString("en-US", {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                    hour: "numeric",
+                                    minute: "2-digit",
+                                    hour12: true
+                                })}
+                            </span>
+                        )}
                     </div>
                 </div>
             </div>

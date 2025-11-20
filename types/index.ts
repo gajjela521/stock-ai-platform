@@ -11,6 +11,7 @@ export interface StockData {
     industry: string;
     description: string;
     logoUrl?: string;
+    lastUpdated?: number; // Unix timestamp
 }
 
 export interface FinancialMetric {

@@ -171,6 +171,7 @@ function transformToStockData(
         industry: profile?.industry || DEFAULTS.INDUSTRY,
         description: profile?.description || DEFAULTS.DESCRIPTION,
         logoUrl: profile?.image,
+        lastUpdated: quote.timestamp || Date.now(),
     };
 }
 
@@ -478,6 +479,7 @@ export async function fetchStockAnalysis(symbol: string): Promise<FullAnalysis |
             industry: "Software",
             description: "A generic company description for demonstration purposes.",
             logoUrl: "",
+            lastUpdated: Date.now(),
         },
         financials: [
             { label: "Revenue (TTM)", value: `$${(10 + rand(5) * 100).toFixed(1)}B`, trend: rand(6) > 0.5 ? "up" : "down" },
