@@ -1,5 +1,6 @@
 import { ALPHA_VANTAGE_BASE_URL, ALPHA_VANTAGE_FUNCTIONS, CACHE_DURATION_MS } from "./alphaVantageConstants";
 import { StockData, FullAnalysis, FinancialMetric, BalanceSheet, Deal, Prediction } from "@/types";
+import { canMakeRequest, recordAPIRequest } from "./apiUsageTracker";
 
 // Simple in-memory cache
 const cache = new Map<string, { data: any; timestamp: number }>();
@@ -32,13 +33,23 @@ async function fetchAlphaVantage(params: Record<string, string>): Promise<any> {
     const cacheKey = url.toString();
     const cached = getFromCache(cacheKey);
     if (cached) {
-        console.log("Returning cached data for:", params.function, params.symbol);
+        console.log("✅ Returning cached data for:", params.function, params.symbol);
         return cached;
     }
 
+    // Check if we can make a request
+    const usageCheck = canMakeRequest();
+    if (!usageCheck.allowed) {
+        console.warn(`⚠️ ${usageCheck.reason}. Reset in ${usageCheck.resetIn}s`);
+        throw new Error(`API_LIMIT_EXCEEDED: ${usageCheck.reason}`);
+    }
+
     try {
-        console.log("Fetching from Alpha Vantage:", params.function, params.symbol);
+        console.log("🔄 Fetching from Alpha Vantage:", params.function, params.symbol);
         const response = await fetch(url.toString());
+
+        // Record the API request
+        recordAPIRequest();
 
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -52,25 +63,27 @@ async function fetchAlphaVantage(params: Record<string, string>): Promise<any> {
         }
 
         if (data["Note"]) {
-            // Rate limit message
-            console.warn("Alpha Vantage rate limit:", data["Note"]);
+            // Rate limit message from Alpha Vantage
+            console.warn("⚠️ Alpha Vantage rate limit:", data["Note"]);
             return null;
         }
 
         setCache(cacheKey, data);
+        console.log("✅ Data fetched and cached successfully");
         return data;
     } catch (error) {
-        console.error("Alpha Vantage API error:", error);
-        return null;
+        console.error("❌ Alpha Vantage API error:", error);
+        throw error;
     }
 }
 
 export async function fetchStockDataFromAlphaVantage(symbol: string): Promise<FullAnalysis | null> {
     try {
-        // Fetch quote and overview in parallel
-        const [quoteData, overviewData] = await Promise.all([
+        // Fetch quote, overview, and news in parallel
+        const [quoteData, overviewData, newsData] = await Promise.all([
             fetchAlphaVantage({ function: ALPHA_VANTAGE_FUNCTIONS.GLOBAL_QUOTE, symbol }),
             fetchAlphaVantage({ function: ALPHA_VANTAGE_FUNCTIONS.OVERVIEW, symbol }),
+            fetchAlphaVantage({ function: ALPHA_VANTAGE_FUNCTIONS.NEWS_SENTIMENT, tickers: symbol, limit: "5" }).catch(() => null),
         ]);
 
         if (!quoteData || !overviewData) {
@@ -139,8 +152,10 @@ export async function fetchStockDataFromAlphaVantage(symbol: string): Promise<Fu
         // Generate prediction based on available data
         const prediction: Prediction = generatePrediction(stock, overviewData);
 
+        // Transform news data
+        const deals: Deal[] = transformNewsToDeals(newsData);
+
         // Mock data for features not available in Alpha Vantage free tier
-        const deals: Deal[] = [];
         const ownership = {
             retailPercentage: 50,
             institutionalPercentage: 50,
@@ -162,6 +177,26 @@ export async function fetchStockDataFromAlphaVantage(symbol: string): Promise<Fu
         console.error("Error fetching from Alpha Vantage:", error);
         return null;
     }
+}
+
+function transformNewsToDeals(newsData: any): Deal[] {
+    if (!newsData || !newsData.feed) {
+        return [];
+    }
+
+    return newsData.feed.slice(0, 5).map((article: any, index: number) => ({
+        id: `news-${index}`,
+        date: new Date(article.time_published).toISOString().split("T")[0],
+        title: article.title,
+        description: article.summary?.substring(0, 200) + "..." || "",
+        sentiment: determineSentimentFromScore(article.overall_sentiment_score),
+    }));
+}
+
+function determineSentimentFromScore(score: number): "positive" | "negative" | "neutral" {
+    if (score > 0.15) return "positive";
+    if (score < -0.15) return "negative";
+    return "neutral";
 }
 
 function generatePrediction(stock: StockData, overview: any): Prediction {

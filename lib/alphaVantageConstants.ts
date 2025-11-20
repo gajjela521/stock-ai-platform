@@ -7,6 +7,8 @@ export const ALPHA_VANTAGE_FUNCTIONS = {
     NEWS_SENTIMENT: "NEWS_SENTIMENT",
     BALANCE_SHEET: "BALANCE_SHEET",
     INCOME_STATEMENT: "INCOME_STATEMENT",
+    CASH_FLOW: "CASH_FLOW",
+    EARNINGS: "EARNINGS",
 } as const;
 
 // Rate limiting for Alpha Vantage free tier
