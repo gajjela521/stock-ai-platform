@@ -1,5 +1,29 @@
 import { FullAnalysis, StockData } from "@/types";
 
+// Rate Limiting Logic
+const RATE_LIMIT_KEY = "stock_api_rate_limit";
+const MAX_REQUESTS = 10;
+const WINDOW_MS = 60 * 1000; // 1 minute
+
+function checkRateLimit(): boolean {
+    if (typeof window === "undefined") return true; // Server-side bypass
+
+    const now = Date.now();
+    const raw = localStorage.getItem(RATE_LIMIT_KEY);
+    let requests: number[] = raw ? JSON.parse(raw) : [];
+
+    // Filter out old requests
+    requests = requests.filter((time) => now - time < WINDOW_MS);
+
+    if (requests.length >= MAX_REQUESTS) {
+        return false;
+    }
+
+    requests.push(now);
+    localStorage.setItem(RATE_LIMIT_KEY, JSON.stringify(requests));
+    return true;
+}
+
 // Mock Data
 const MOCK_DATA: Record<string, FullAnalysis> = {
     AAPL: {
@@ -46,6 +70,13 @@ const MOCK_DATA: Record<string, FullAnalysis> = {
                 description: "Discussions ongoing for integrating ChatGPT into iOS.",
                 sentiment: "positive",
             },
+            {
+                id: "3",
+                date: "2024-03-22",
+                title: "Antitrust Lawsuit Filed by DOJ",
+                description: "US Department of Justice sues Apple over smartphone monopoly.",
+                sentiment: "negative",
+            },
         ],
         prediction: {
             nextQuarterRevenueForecast: 95000000000,
@@ -58,7 +89,23 @@ const MOCK_DATA: Record<string, FullAnalysis> = {
             ],
             sentimentScore: 0.75,
             marketTrend: "bullish",
+            priceTarget: 210.00,
+            nextQuarterPositives: [
+                "Launch of Apple Intelligence features",
+                "Holiday season sales boost",
+                "Services margin expansion",
+            ],
         },
+        ownership: {
+            retailPercentage: 40,
+            institutionalPercentage: 59,
+            insiderPercentage: 1,
+        },
+        competitors: [
+            { symbol: "MSFT", name: "Microsoft", price: 420.50, changePercent: 0.8 },
+            { symbol: "GOOGL", name: "Alphabet", price: 175.30, changePercent: -0.5 },
+            { symbol: "SAMSUNG", name: "Samsung", price: 1100.00, changePercent: 1.2 },
+        ],
     },
     TSLA: {
         stock: {
@@ -115,11 +162,31 @@ const MOCK_DATA: Record<string, FullAnalysis> = {
             ],
             sentimentScore: -0.2,
             marketTrend: "bearish",
+            priceTarget: 150.00,
+            nextQuarterPositives: [
+                "Cybertruck production ramp up",
+                "Energy storage business growth",
+                "Potential FSD licensing deals",
+            ],
         },
+        ownership: {
+            retailPercentage: 45,
+            institutionalPercentage: 42,
+            insiderPercentage: 13,
+        },
+        competitors: [
+            { symbol: "BYD", name: "BYD Co.", price: 28.50, changePercent: 2.1 },
+            { symbol: "RIVN", name: "Rivian", price: 10.20, changePercent: -4.5 },
+            { symbol: "F", name: "Ford", price: 12.10, changePercent: 0.5 },
+        ],
     },
 };
 
 export async function fetchStockAnalysis(symbol: string): Promise<FullAnalysis | null> {
+    if (!checkRateLimit()) {
+        throw new Error("Rate limit exceeded. Please wait a minute.");
+    }
+
     // Simulate API delay
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
@@ -144,6 +211,7 @@ export async function fetchStockAnalysis(symbol: string): Promise<FullAnalysis |
             sector: "Technology",
             industry: "Software",
             description: "A generic company description for demonstration purposes.",
+            logoUrl: "",
         },
         financials: [
             { label: "Revenue (TTM)", value: "$10.5B", trend: "up" },
@@ -158,7 +226,22 @@ export async function fetchStockAnalysis(symbol: string): Promise<FullAnalysis |
             cashAndEquivalents: 5000000000,
             longTermDebt: 10000000000,
         },
-        deals: [],
+        deals: [
+            {
+                id: "1",
+                date: "2024-05-20",
+                title: "Quarterly Earnings Beat Expectations",
+                description: "Company reports strong growth in cloud segment.",
+                sentiment: "positive",
+            },
+            {
+                id: "2",
+                date: "2024-05-10",
+                title: "New Product Line Announced",
+                description: "Expansion into enterprise AI solutions.",
+                sentiment: "positive",
+            }
+        ],
         prediction: {
             nextQuarterRevenueForecast: 3000000000,
             nextQuarterEPSForecast: 1.10,
@@ -169,6 +252,20 @@ export async function fetchStockAnalysis(symbol: string): Promise<FullAnalysis |
             ],
             sentimentScore: 0,
             marketTrend: "neutral",
+            priceTarget: Math.random() * 1000,
+            nextQuarterPositives: [
+                "Stable cash flow",
+                "Potential dividend increase",
+            ],
         },
+        ownership: {
+            retailPercentage: 30,
+            institutionalPercentage: 60,
+            insiderPercentage: 10,
+        },
+        competitors: [
+            { symbol: "COMP1", name: "Competitor A", price: 150.00, changePercent: 1.5 },
+            { symbol: "COMP2", name: "Competitor B", price: 200.00, changePercent: -0.8 },
+        ],
     };
 }

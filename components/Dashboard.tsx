@@ -3,15 +3,17 @@
 import { FullAnalysis } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
-import { ArrowUpRight, ArrowDownRight, Minus, TrendingUp, TrendingDown, DollarSign, Briefcase, Activity } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight, Minus, TrendingUp, TrendingDown, DollarSign, Briefcase, Activity, Target, ThumbsUp } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { OwnershipCard } from "./OwnershipCard";
+import { CompetitorList } from "./CompetitorList";
 
 interface DashboardProps {
     data: FullAnalysis;
 }
 
 export function Dashboard({ data }: DashboardProps) {
-    const { stock, financials, balanceSheet, deals, prediction } = data;
+    const { stock, financials, balanceSheet, deals, prediction, ownership, competitors } = data;
 
     const formatCurrency = (val: number) => {
         return new Intl.NumberFormat("en-US", {
@@ -76,26 +78,48 @@ export function Dashboard({ data }: DashboardProps) {
                                 <div className="text-2xl font-bold text-neutral-900 dark:text-white">${prediction.nextQuarterEPSForecast}</div>
                             </div>
                         </div>
-                        <div>
-                            <div className="flex justify-between text-sm mb-1">
-                                <span className="font-medium text-neutral-700 dark:text-neutral-300">AI Confidence Score</span>
-                                <span className="font-bold text-indigo-600 dark:text-indigo-400">{Math.round(prediction.confidenceScore * 100)}%</span>
+
+                        <div className="p-4 bg-white dark:bg-neutral-900 rounded-lg shadow-sm border border-indigo-100 dark:border-indigo-900/50 flex items-center justify-between">
+                            <div>
+                                <div className="flex items-center gap-2 text-sm text-neutral-500 mb-1">
+                                    <Target className="w-4 h-4" />
+                                    Price Target
+                                </div>
+                                <div className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">${prediction.priceTarget.toFixed(2)}</div>
                             </div>
-                            <div className="h-2 w-full bg-neutral-200 dark:bg-neutral-800 rounded-full overflow-hidden">
-                                <div className="h-full bg-indigo-600 transition-all duration-1000" style={{ width: `${prediction.confidenceScore * 100}%` }} />
+                            <div className="text-right">
+                                <div className="text-sm text-neutral-500">Confidence</div>
+                                <div className="text-xl font-bold">{Math.round(prediction.confidenceScore * 100)}%</div>
                             </div>
                         </div>
                     </div>
-                    <div className="bg-white/50 dark:bg-neutral-900/50 rounded-lg p-4 border border-indigo-100 dark:border-indigo-900/50">
-                        <h4 className="font-semibold mb-2 text-indigo-900 dark:text-indigo-100">Key Reasoning</h4>
-                        <ul className="space-y-2">
-                            {prediction.reasoning.map((reason, i) => (
-                                <li key={i} className="flex items-start gap-2 text-sm text-neutral-700 dark:text-neutral-300">
-                                    <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-indigo-500 flex-shrink-0" />
-                                    {reason}
-                                </li>
-                            ))}
-                        </ul>
+
+                    <div className="space-y-4">
+                        <div className="bg-white/50 dark:bg-neutral-900/50 rounded-lg p-4 border border-indigo-100 dark:border-indigo-900/50">
+                            <h4 className="font-semibold mb-2 text-indigo-900 dark:text-indigo-100">Key Reasoning</h4>
+                            <ul className="space-y-2">
+                                {prediction.reasoning.map((reason, i) => (
+                                    <li key={i} className="flex items-start gap-2 text-sm text-neutral-700 dark:text-neutral-300">
+                                        <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-indigo-500 flex-shrink-0" />
+                                        {reason}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+
+                        <div className="bg-green-50/50 dark:bg-green-900/20 rounded-lg p-4 border border-green-100 dark:border-green-900/50">
+                            <div className="flex items-center gap-2 mb-2">
+                                <ThumbsUp className="w-4 h-4 text-green-600 dark:text-green-400" />
+                                <h4 className="font-semibold text-green-900 dark:text-green-100">Next Quarter Positives</h4>
+                            </div>
+                            <ul className="space-y-1">
+                                {prediction.nextQuarterPositives.map((positive, i) => (
+                                    <li key={i} className="text-sm text-neutral-700 dark:text-neutral-300 pl-6 relative before:content-['•'] before:absolute before:left-2 before:text-green-500">
+                                        {positive}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
                     </div>
                 </CardContent>
             </Card>
@@ -118,60 +142,65 @@ export function Dashboard({ data }: DashboardProps) {
             </div>
 
             <div className="grid md:grid-cols-3 gap-8">
-                {/* Balance Sheet Summary */}
-                <Card className="md:col-span-1">
-                    <CardHeader>
-                        <div className="flex items-center gap-2">
-                            <DollarSign className="w-5 h-5 text-neutral-500" />
-                            <CardTitle className="text-lg">Balance Sheet</CardTitle>
-                        </div>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="flex justify-between items-center py-2 border-b border-neutral-100 dark:border-neutral-800">
-                            <span className="text-neutral-600 dark:text-neutral-400">Total Assets</span>
-                            <span className="font-medium">{formatCurrency(balanceSheet.totalAssets)}</span>
-                        </div>
-                        <div className="flex justify-between items-center py-2 border-b border-neutral-100 dark:border-neutral-800">
-                            <span className="text-neutral-600 dark:text-neutral-400">Total Liabilities</span>
-                            <span className="font-medium">{formatCurrency(balanceSheet.totalLiabilities)}</span>
-                        </div>
-                        <div className="flex justify-between items-center py-2 border-b border-neutral-100 dark:border-neutral-800">
-                            <span className="text-neutral-600 dark:text-neutral-400">Total Equity</span>
-                            <span className="font-medium">{formatCurrency(balanceSheet.totalEquity)}</span>
-                        </div>
-                        <div className="flex justify-between items-center py-2 border-b border-neutral-100 dark:border-neutral-800">
-                            <span className="text-neutral-600 dark:text-neutral-400">Cash & Eq.</span>
-                            <span className="font-medium">{formatCurrency(balanceSheet.cashAndEquivalents)}</span>
-                        </div>
-                        <div className="flex justify-between items-center py-2">
-                            <span className="text-neutral-600 dark:text-neutral-400">Long Term Debt</span>
-                            <span className="font-medium">{formatCurrency(balanceSheet.longTermDebt)}</span>
-                        </div>
-                    </CardContent>
-                </Card>
+                <div className="space-y-8">
+                    <OwnershipCard data={ownership} />
+                    <CompetitorList competitors={competitors} />
+
+                    {/* Balance Sheet Summary */}
+                    <Card>
+                        <CardHeader>
+                            <div className="flex items-center gap-2">
+                                <DollarSign className="w-5 h-5 text-neutral-500" />
+                                <CardTitle className="text-lg">Balance Sheet</CardTitle>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="flex justify-between items-center py-2 border-b border-neutral-100 dark:border-neutral-800">
+                                <span className="text-neutral-600 dark:text-neutral-400">Total Assets</span>
+                                <span className="font-medium">{formatCurrency(balanceSheet.totalAssets)}</span>
+                            </div>
+                            <div className="flex justify-between items-center py-2 border-b border-neutral-100 dark:border-neutral-800">
+                                <span className="text-neutral-600 dark:text-neutral-400">Total Liabilities</span>
+                                <span className="font-medium">{formatCurrency(balanceSheet.totalLiabilities)}</span>
+                            </div>
+                            <div className="flex justify-between items-center py-2 border-b border-neutral-100 dark:border-neutral-800">
+                                <span className="text-neutral-600 dark:text-neutral-400">Total Equity</span>
+                                <span className="font-medium">{formatCurrency(balanceSheet.totalEquity)}</span>
+                            </div>
+                            <div className="flex justify-between items-center py-2 border-b border-neutral-100 dark:border-neutral-800">
+                                <span className="text-neutral-600 dark:text-neutral-400">Cash & Eq.</span>
+                                <span className="font-medium">{formatCurrency(balanceSheet.cashAndEquivalents)}</span>
+                            </div>
+                            <div className="flex justify-between items-center py-2">
+                                <span className="text-neutral-600 dark:text-neutral-400">Long Term Debt</span>
+                                <span className="font-medium">{formatCurrency(balanceSheet.longTermDebt)}</span>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
 
                 {/* Recent Deals & News */}
-                <Card className="md:col-span-2">
+                <Card className="md:col-span-2 h-fit">
                     <CardHeader>
                         <div className="flex items-center gap-2">
                             <Briefcase className="w-5 h-5 text-neutral-500" />
-                            <CardTitle className="text-lg">Recent Deals & News</CardTitle>
+                            <CardTitle className="text-lg">Recent Deals & Market News</CardTitle>
                         </div>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
                             {deals.length > 0 ? (
                                 deals.map((deal) => (
-                                    <div key={deal.id} className="flex gap-4 p-3 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-colors border border-transparent hover:border-neutral-100 dark:hover:border-neutral-800">
+                                    <div key={deal.id} className="flex gap-4 p-4 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-colors border border-neutral-100 dark:border-neutral-800">
                                         <div className="flex-1">
-                                            <div className="flex items-center justify-between mb-1">
-                                                <h4 className="font-semibold text-neutral-900 dark:text-neutral-100">{deal.title}</h4>
-                                                <span className="text-xs text-neutral-500">{deal.date}</span>
+                                            <div className="flex items-center justify-between mb-2">
+                                                <h4 className="font-semibold text-neutral-900 dark:text-neutral-100 text-lg">{deal.title}</h4>
+                                                <span className="text-xs text-neutral-500 bg-neutral-100 dark:bg-neutral-800 px-2 py-1 rounded">{deal.date}</span>
                                             </div>
-                                            <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-2">{deal.description}</p>
+                                            <p className="text-neutral-600 dark:text-neutral-400 mb-3 leading-relaxed">{deal.description}</p>
                                             <div className="flex items-center gap-2">
                                                 <Badge variant={deal.sentiment === "positive" ? "success" : deal.sentiment === "negative" ? "destructive" : "secondary"}>
-                                                    {deal.sentiment}
+                                                    {deal.sentiment.toUpperCase()}
                                                 </Badge>
                                                 {deal.value && <Badge variant="outline">{deal.value}</Badge>}
                                             </div>

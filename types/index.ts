@@ -36,6 +36,19 @@ export interface Deal {
     sentiment: "positive" | "negative" | "neutral";
 }
 
+export interface Ownership {
+    retailPercentage: number;
+    institutionalPercentage: number;
+    insiderPercentage: number;
+}
+
+export interface Competitor {
+    symbol: string;
+    name: string;
+    price: number;
+    changePercent: number;
+}
+
 export interface Prediction {
     nextQuarterRevenueForecast: number;
     nextQuarterEPSForecast: number;
@@ -43,6 +56,8 @@ export interface Prediction {
     reasoning: string[];
     sentimentScore: number; // -1 to 1
     marketTrend: "bullish" | "bearish" | "neutral";
+    priceTarget: number;
+    nextQuarterPositives: string[];
 }
 
 export interface FullAnalysis {
@@ -51,4 +66,6 @@ export interface FullAnalysis {
     balanceSheet: BalanceSheet;
     deals: Deal[];
     prediction: Prediction;
+    ownership: Ownership;
+    competitors: Competitor[];
 }
