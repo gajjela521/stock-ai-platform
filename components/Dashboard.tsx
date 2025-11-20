@@ -3,7 +3,7 @@
 import { FullAnalysis } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
-import { ArrowUpRight, ArrowDownRight, Minus, TrendingUp, TrendingDown, DollarSign, Briefcase, Activity, Target, ThumbsUp } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight, Minus, TrendingUp, TrendingDown, DollarSign, Briefcase, Activity, Target, ThumbsUp, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { OwnershipCard } from "./OwnershipCard";
 import { CompetitorList } from "./CompetitorList";
@@ -52,93 +52,106 @@ export function Dashboard({ data }: DashboardProps) {
                 </div>
             </div>
 
-            {/* AI Prediction Card - Hero Feature */}
-            <Card className="border-2 border-indigo-100 dark:border-indigo-900 bg-gradient-to-br from-white to-indigo-50/50 dark:from-neutral-950 dark:to-indigo-950/30 shadow-lg">
-                <CardHeader>
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <Activity className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
-                            <CardTitle className="text-xl text-indigo-900 dark:text-indigo-100">AI Market Prediction (Next Quarter)</CardTitle>
-                        </div>
-                        <Badge variant={prediction.marketTrend === "bullish" ? "success" : prediction.marketTrend === "bearish" ? "destructive" : "secondary"}>
-                            {prediction.marketTrend.toUpperCase()}
-                        </Badge>
-                    </div>
-                    <CardDescription>Based on sentiment analysis, historical data, and market trends.</CardDescription>
-                </CardHeader>
-                <CardContent className="grid md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="p-4 bg-white dark:bg-neutral-900 rounded-lg shadow-sm border border-indigo-100 dark:border-indigo-900/50">
-                                <div className="text-sm text-neutral-500 mb-1">Forecasted Revenue</div>
-                                <div className="text-2xl font-bold text-neutral-900 dark:text-white">{formatCurrency(prediction.nextQuarterRevenueForecast)}</div>
-                            </div>
-                            <div className="p-4 bg-white dark:bg-neutral-900 rounded-lg shadow-sm border border-indigo-100 dark:border-indigo-900/50">
-                                <div className="text-sm text-neutral-500 mb-1">Forecasted EPS</div>
-                                <div className="text-2xl font-bold text-neutral-900 dark:text-white">${prediction.nextQuarterEPSForecast}</div>
-                            </div>
-                        </div>
+            {/* LIVE MARKET DATA SECTION */}
+            <div className="space-y-4">
+                <div className="flex items-center gap-2 pb-2 border-b border-neutral-200 dark:border-neutral-800">
+                    <BarChart3 className="w-5 h-5 text-neutral-500" />
+                    <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">Live Market Data</h2>
+                </div>
 
-                        <div className="p-4 bg-white dark:bg-neutral-900 rounded-lg shadow-sm border border-indigo-100 dark:border-indigo-900/50 flex items-center justify-between">
-                            <div>
-                                <div className="flex items-center gap-2 text-sm text-neutral-500 mb-1">
-                                    <Target className="w-4 h-4" />
-                                    Price Target
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {financials.map((metric, i) => (
+                        <Card key={i} className="bg-neutral-50 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800">
+                            <CardContent className="p-6">
+                                <div className="text-sm text-neutral-500 mb-1">{metric.label}</div>
+                                <div className="flex items-center gap-2">
+                                    <div className="text-xl font-bold">{metric.value}</div>
+                                    {metric.trend === "up" && <TrendingUp className="w-4 h-4 text-green-500" />}
+                                    {metric.trend === "down" && <TrendingDown className="w-4 h-4 text-red-500" />}
+                                    {metric.trend === "neutral" && <Minus className="w-4 h-4 text-neutral-400" />}
                                 </div>
-                                <div className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">${prediction.priceTarget.toFixed(2)}</div>
-                            </div>
-                            <div className="text-right">
-                                <div className="text-sm text-neutral-500">Confidence</div>
-                                <div className="text-xl font-bold">{Math.round(prediction.confidenceScore * 100)}%</div>
-                            </div>
-                        </div>
-                    </div>
+                            </CardContent>
+                        </Card>
+                    ))}
+                </div>
+            </div>
 
-                    <div className="space-y-4">
-                        <div className="bg-white/50 dark:bg-neutral-900/50 rounded-lg p-4 border border-indigo-100 dark:border-indigo-900/50">
-                            <h4 className="font-semibold mb-2 text-indigo-900 dark:text-indigo-100">Key Reasoning</h4>
-                            <ul className="space-y-2">
-                                {prediction.reasoning.map((reason, i) => (
-                                    <li key={i} className="flex items-start gap-2 text-sm text-neutral-700 dark:text-neutral-300">
-                                        <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-indigo-500 flex-shrink-0" />
-                                        {reason}
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
+            {/* AI PREDICTION SECTION */}
+            <div className="space-y-4">
+                <div className="flex items-center gap-2 pb-2 border-b border-neutral-200 dark:border-neutral-800">
+                    <Activity className="w-5 h-5 text-indigo-500" />
+                    <h2 className="text-lg font-semibold text-indigo-900 dark:text-indigo-100">AI Analysis & Predictions</h2>
+                </div>
 
-                        <div className="bg-green-50/50 dark:bg-green-900/20 rounded-lg p-4 border border-green-100 dark:border-green-900/50">
-                            <div className="flex items-center gap-2 mb-2">
-                                <ThumbsUp className="w-4 h-4 text-green-600 dark:text-green-400" />
-                                <h4 className="font-semibold text-green-900 dark:text-green-100">Next Quarter Positives</h4>
-                            </div>
-                            <ul className="space-y-1">
-                                {prediction.nextQuarterPositives.map((positive, i) => (
-                                    <li key={i} className="text-sm text-neutral-700 dark:text-neutral-300 pl-6 relative before:content-['•'] before:absolute before:left-2 before:text-green-500">
-                                        {positive}
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-
-            {/* Financials Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {financials.map((metric, i) => (
-                    <Card key={i}>
-                        <CardContent className="p-6">
-                            <div className="text-sm text-neutral-500 mb-1">{metric.label}</div>
+                <Card className="border-2 border-indigo-100 dark:border-indigo-900 bg-gradient-to-br from-white to-indigo-50/50 dark:from-neutral-950 dark:to-indigo-950/30 shadow-lg">
+                    <CardHeader>
+                        <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                                <div className="text-xl font-bold">{metric.value}</div>
-                                {metric.trend === "up" && <TrendingUp className="w-4 h-4 text-green-500" />}
-                                {metric.trend === "down" && <TrendingDown className="w-4 h-4 text-red-500" />}
-                                {metric.trend === "neutral" && <Minus className="w-4 h-4 text-neutral-400" />}
+                                <CardTitle className="text-xl text-indigo-900 dark:text-indigo-100">Next Quarter Forecast</CardTitle>
                             </div>
-                        </CardContent>
-                    </Card>
-                ))}
+                            <Badge variant={prediction.marketTrend === "bullish" ? "success" : prediction.marketTrend === "bearish" ? "destructive" : "secondary"}>
+                                {prediction.marketTrend.toUpperCase()}
+                            </Badge>
+                        </div>
+                        <CardDescription>AI-generated predictions based on sentiment, historical data, and market trends.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="grid md:grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="p-4 bg-white dark:bg-neutral-900 rounded-lg shadow-sm border border-indigo-100 dark:border-indigo-900/50">
+                                    <div className="text-sm text-neutral-500 mb-1">Revenue Forecast</div>
+                                    <div className="text-2xl font-bold text-neutral-900 dark:text-white">{formatCurrency(prediction.nextQuarterRevenueForecast)}</div>
+                                </div>
+                                <div className="p-4 bg-white dark:bg-neutral-900 rounded-lg shadow-sm border border-indigo-100 dark:border-indigo-900/50">
+                                    <div className="text-sm text-neutral-500 mb-1">EPS Forecast</div>
+                                    <div className="text-2xl font-bold text-neutral-900 dark:text-white">${prediction.nextQuarterEPSForecast}</div>
+                                </div>
+                            </div>
+
+                            <div className="p-4 bg-white dark:bg-neutral-900 rounded-lg shadow-sm border border-indigo-100 dark:border-indigo-900/50 flex items-center justify-between">
+                                <div>
+                                    <div className="flex items-center gap-2 text-sm text-neutral-500 mb-1">
+                                        <Target className="w-4 h-4" />
+                                        Price Target
+                                    </div>
+                                    <div className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">${prediction.priceTarget.toFixed(2)}</div>
+                                </div>
+                                <div className="text-right">
+                                    <div className="text-sm text-neutral-500">Confidence</div>
+                                    <div className="text-xl font-bold">{Math.round(prediction.confidenceScore * 100)}%</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div className="bg-white/50 dark:bg-neutral-900/50 rounded-lg p-4 border border-indigo-100 dark:border-indigo-900/50">
+                                <h4 className="font-semibold mb-2 text-indigo-900 dark:text-indigo-100">Key Reasoning</h4>
+                                <ul className="space-y-2">
+                                    {prediction.reasoning.map((reason, i) => (
+                                        <li key={i} className="flex items-start gap-2 text-sm text-neutral-700 dark:text-neutral-300">
+                                            <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-indigo-500 flex-shrink-0" />
+                                            {reason}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+
+                            <div className="bg-green-50/50 dark:bg-green-900/20 rounded-lg p-4 border border-green-100 dark:border-green-900/50">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <ThumbsUp className="w-4 h-4 text-green-600 dark:text-green-400" />
+                                    <h4 className="font-semibold text-green-900 dark:text-green-100">Next Quarter Positives</h4>
+                                </div>
+                                <ul className="space-y-1">
+                                    {prediction.nextQuarterPositives.map((positive, i) => (
+                                        <li key={i} className="text-sm text-neutral-700 dark:text-neutral-300 pl-6 relative before:content-['•'] before:absolute before:left-2 before:text-green-500">
+                                            {positive}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
 
             <div className="grid md:grid-cols-3 gap-8">

@@ -1,8 +1,8 @@
-import { FullAnalysis, StockData } from "@/types";
+import { FullAnalysis, StockData, FinancialMetric, BalanceSheet, Deal, Prediction, Ownership, Competitor } from "@/types";
 
 // Rate Limiting Logic
 const RATE_LIMIT_KEY = "stock_api_rate_limit";
-const MAX_REQUESTS = 10;
+const MAX_REQUESTS = 100; // Increased to 100 per user request
 const WINDOW_MS = 60 * 1000; // 1 minute
 
 function checkRateLimit(): boolean {
@@ -24,7 +24,91 @@ function checkRateLimit(): boolean {
     return true;
 }
 
-// Mock Data
+// FMP API Integration
+const FMP_API_KEY = process.env.NEXT_PUBLIC_FMP_API_KEY;
+const BASE_URL = "https://financialmodelingprep.com/api/v3";
+
+async function fetchRealData(symbol: string): Promise<FullAnalysis | null> {
+    if (!FMP_API_KEY) return null;
+
+    try {
+        const [quoteRes, profileRes, metricsRes] = await Promise.all([
+            fetch(`${BASE_URL}/quote/${symbol}?apikey=${FMP_API_KEY}`),
+            fetch(`${BASE_URL}/profile/${symbol}?apikey=${FMP_API_KEY}`),
+            fetch(`${BASE_URL}/key-metrics-ttm/${symbol}?apikey=${FMP_API_KEY}`),
+        ]);
+
+        const quote = await quoteRes.json();
+        const profile = await profileRes.json();
+        const metrics = await metricsRes.json();
+
+        if (!quote || quote.length === 0) return null;
+
+        const q = quote[0];
+        const p = profile[0];
+        const m = metrics[0];
+
+        // Construct Real Data Object
+        const stock: StockData = {
+            symbol: q.symbol,
+            companyName: q.name,
+            price: q.price,
+            change: q.change,
+            changePercent: q.changesPercentage,
+            currency: p?.currency || "USD",
+            exchange: q.exchange,
+            marketCap: q.marketCap,
+            sector: p?.sector || "Unknown",
+            industry: p?.industry || "Unknown",
+            description: p?.description || "No description available.",
+            logoUrl: p?.image,
+        };
+
+        const financials: FinancialMetric[] = [
+            { label: "Revenue (TTM)", value: m?.revenuePerShareTTM ? `$${(m.revenuePerShareTTM * q.sharesOutstanding / 1e9).toFixed(2)}B` : "N/A", trend: "neutral" },
+            { label: "Net Income", value: m?.netIncomePerShareTTM ? `$${(m.netIncomePerShareTTM * q.sharesOutstanding / 1e9).toFixed(2)}B` : "N/A", trend: "neutral" },
+            { label: "P/E Ratio", value: q.pe ? q.pe.toFixed(2) : "N/A", trend: "neutral" },
+            { label: "EPS", value: q.eps ? q.eps.toFixed(2) : "N/A", trend: "neutral" },
+        ];
+
+        // Mocking the rest for now as FMP free tier has limits or requires complex multiple calls
+        // Ideally we would fetch balance sheet, ownership etc from FMP endpoints if available
+        return {
+            stock,
+            financials,
+            balanceSheet: {
+                totalAssets: 0, // Placeholder
+                totalLiabilities: 0,
+                totalEquity: 0,
+                cashAndEquivalents: 0,
+                longTermDebt: 0,
+            },
+            deals: [], // FMP news endpoint is separate
+            prediction: {
+                nextQuarterRevenueForecast: 0,
+                nextQuarterEPSForecast: 0,
+                confidenceScore: 0.5,
+                reasoning: ["Real-time prediction requires advanced AI model integration."],
+                sentimentScore: 0,
+                marketTrend: "neutral",
+                priceTarget: q.price * 1.1, // Mock target
+                nextQuarterPositives: ["Data fetched from live market"],
+            },
+            ownership: {
+                retailPercentage: 50,
+                institutionalPercentage: 50,
+                insiderPercentage: 0,
+            },
+            competitors: [],
+        };
+
+    } catch (error) {
+        console.error("Error fetching real data:", error);
+        return null;
+    }
+}
+
+// Mock Data (Fallback)
 const MOCK_DATA: Record<string, FullAnalysis> = {
     AAPL: {
         stock: {
@@ -191,6 +275,12 @@ export async function fetchStockAnalysis(symbol: string): Promise<FullAnalysis |
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     const normalizedSymbol = symbol.toUpperCase();
+
+    // Try fetching real data first if key is present
+    if (FMP_API_KEY) {
+        const realData = await fetchRealData(normalizedSymbol);
+        if (realData) return realData;
+    }
 
     // Return mock data if available
     if (MOCK_DATA[normalizedSymbol]) {
