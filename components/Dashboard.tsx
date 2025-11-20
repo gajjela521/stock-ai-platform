@@ -39,6 +39,10 @@ export function Dashboard({ data }: DashboardProps) {
                             <span className="font-semibold">{stock.symbol}</span>
                             <span>•</span>
                             <span>{stock.exchange}</span>
+                            <span>•</span>
+                            <span className="text-neutral-400">{stock.sector}</span>
+                            <span>•</span>
+                            <span className="text-neutral-400">{stock.industry}</span>
                         </div>
                     </div>
                 </div>
@@ -49,6 +53,11 @@ export function Dashboard({ data }: DashboardProps) {
                     <div className={cn("flex items-center justify-end gap-1 text-lg font-medium", stock.change >= 0 ? "text-green-600" : "text-red-600")}>
                         {stock.change >= 0 ? <ArrowUpRight className="w-5 h-5" /> : <ArrowDownRight className="w-5 h-5" />}
                         {stock.change > 0 ? "+" : ""}{stock.change} ({stock.changePercent}%)
+                    </div>
+                    <div className="mt-2 flex justify-end">
+                        <Badge variant="outline" className="text-xs font-normal text-neutral-500">
+                            {data.financials.length > 0 && data.financials[0].value !== "N/A" ? "Live Data" : "Simulated Data"}
+                        </Badge>
                     </div>
                 </div>
             </div>

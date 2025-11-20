@@ -36,11 +36,32 @@ export function StockSearch() {
         }
     };
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setSymbol(value);
 
         if (value.length > 0) {
+            // Try fetching from FMP API first if key is available
+            const apiKey = process.env.NEXT_PUBLIC_FMP_API_KEY;
+            if (apiKey) {
+                try {
+                    const res = await fetch(`https://financialmodelingprep.com/api/v3/search?query=${value}&limit=10&apikey=${apiKey}`);
+                    const data = await res.json();
+                    if (data && Array.isArray(data)) {
+                        setSuggestions(data.map((item: any) => ({
+                            symbol: item.symbol,
+                            name: item.name,
+                            exchange: item.stockExchange
+                        })));
+                        setShowSuggestions(true);
+                        return;
+                    }
+                } catch (err) {
+                    console.error("Failed to fetch suggestions", err);
+                }
+            }
+
+            // Fallback to local popular stocks
             const filtered = POPULAR_STOCKS.filter(stock =>
                 stock.symbol.toLowerCase().includes(value.toLowerCase()) ||
                 stock.name.toLowerCase().includes(value.toLowerCase())
@@ -99,7 +120,10 @@ export function StockSearch() {
                                             className="px-4 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer flex justify-between items-center"
                                             onClick={() => handleSuggestionClick(suggestion.symbol)}
                                         >
-                                            <span className="font-medium">{suggestion.symbol}</span>
+                                            <div className="flex flex-col items-start">
+                                                <span className="font-medium">{suggestion.symbol}</span>
+                                                <span className="text-xs text-neutral-400">{(suggestion as any).exchange}</span>
+                                            </div>
                                             <span className="text-sm text-neutral-500 truncate ml-2">{suggestion.name}</span>
                                         </div>
                                     ))}

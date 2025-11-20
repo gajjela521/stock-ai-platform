@@ -3,6 +3,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { Dashboard } from "@/components/Dashboard";
 import { MarketStatusCard } from "@/components/MarketStatusCard";
 import { FullAnalysis } from "@/types";
+import "@testing-library/jest-dom";
 
 // Mock global fetch
 global.fetch = jest.fn();
@@ -142,11 +143,11 @@ describe("Stock AI Platform Tests", () => {
         // We can check if "Open" is present generally, or specifically near NASDAQ
         // Since the component structure is simple, checking for existence is okay for now
         // but getAllByText is safer if multiple are present
-        expect(screen.getAllByText("Open").length).toBeGreaterThan(0);
+        expect(screen.getAllByText("OPEN").length).toBeGreaterThan(0);
 
         const lse = screen.getByText("LSE");
         expect(lse).toBeInTheDocument();
-        expect(screen.getAllByText("Closed").length).toBeGreaterThan(0);
+        expect(screen.getAllByText("CLOSED").length).toBeGreaterThan(0);
     });
 
     // 7. Test Fallback Data Structure
@@ -185,4 +186,29 @@ describe("Stock AI Platform Tests", () => {
         }
     });
 
+    // 11. Test Real Data Prediction Heuristics
+    test("Real data prediction uses PE ratio for sentiment", async () => {
+        process.env.NEXT_PUBLIC_FMP_API_KEY = "test-key";
+
+        // Mock FMP response with specific PE
+        (global.fetch as jest.Mock).mockImplementation((url) => {
+            if (url.includes("/quote/")) {
+                return Promise.resolve({
+                    json: async () => ([{
+                        symbol: "TEST", name: "Test", price: 100, pe: 10, eps: 5,
+                        changesPercentage: 1, exchange: "NYSE", marketCap: 1000
+                    }])
+                });
+            }
+            if (url.includes("/profile/")) return Promise.resolve({ json: async () => ([{}]) });
+            if (url.includes("/key-metrics-ttm/")) return Promise.resolve({ json: async () => ([{}]) });
+            if (url.includes("/is-the-market-open")) return Promise.resolve({ json: async () => ({}) });
+            return Promise.resolve({ json: async () => ({}) });
+        });
+
+        const data = await fetchStockAnalysis("TEST");
+        // PE 10 < 25 => Bullish
+        expect(data?.prediction.marketTrend).toBe("bullish");
+        expect(data?.prediction.priceTarget).toBeGreaterThan(100);
+    });
 });
