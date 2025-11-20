@@ -15,7 +15,7 @@ export function MarketStatusCard({ data }: MarketStatusCardProps) {
         return () => clearInterval(timer);
     }, []);
 
-    const getRegionTime = (timezone: string) => {
+    const formatTime = (timezone: string) => {
         try {
             return new Intl.DateTimeFormat("en-US", {
                 hour: "numeric",
@@ -29,12 +29,19 @@ export function MarketStatusCard({ data }: MarketStatusCardProps) {
         }
     };
 
-    // Group by region for cleaner display
-    const regions = [
-        { name: "North America", exchanges: ["NYSE", "NASDAQ", "TSX"], timezone: "America/New_York" },
-        { name: "Europe", exchanges: ["LSE", "EURONEXT", "XETRA"], timezone: "Europe/London" },
-        { name: "Asia", exchanges: ["JPX", "HKSE", "SHZ"], timezone: "Asia/Tokyo" },
-    ];
+    const currentTime = {
+        northAmerica: formatTime("America/New_York"),
+        europe: formatTime("Europe/London"),
+        asia: formatTime("Asia/Tokyo"),
+    };
+
+    const groupedExchanges = {
+        northAmerica: ["NYSE", "NASDAQ", "TSX"],
+        europe: ["LSE", "EURONEXT", "XETRA"],
+        asia: ["JPX", "HKSE", "SHZ"],
+    };
+
+    const marketStatus = data; // Alias data for clarity in new JSX
 
     return (
         <Card className="h-full shadow-sm hover:shadow-md transition-shadow duration-200">
@@ -45,35 +52,84 @@ export function MarketStatusCard({ data }: MarketStatusCardProps) {
                 </CardTitle>
             </CardHeader>
             <CardContent>
-                <div className="space-y-6">
-                    {regions.map((region) => (
-                        <div key={region.name} className="space-y-2">
-                            <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-1">
-                                <h3 className="font-semibold text-sm text-neutral-900 dark:text-neutral-100">{region.name}</h3>
-                                <div className="flex items-center gap-1 text-xs text-neutral-500 font-mono">
-                                    <Clock className="w-3 h-3" />
-                                    {getRegionTime(region.timezone)}
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-3 gap-2">
-                                {region.exchanges.map((ex) => {
-                                    const status = data.find((d) => d.exchange === ex)?.status || "closed";
-                                    const isOpen = status.toLowerCase() === "open";
-                                    return (
-                                        <div key={ex} className="flex flex-col items-center p-2 bg-neutral-50 dark:bg-neutral-900 rounded-lg">
-                                            <span className="text-xs font-bold text-neutral-700 dark:text-neutral-300">{ex}</span>
-                                            <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full mt-1 ${isOpen
-                                                    ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                                                    : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                                                }`}>
-                                                {isOpen ? "OPEN" : "CLOSED"}
-                                            </span>
-                                        </div>
-                                    );
-                                })}
+                {/* Regional Time Clocks */}
+                <div className="grid grid-cols-3 gap-4 mb-6 pb-6 border-b border-neutral-200 dark:border-neutral-800">
+                    <div className="text-center">
+                        <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">North America</div>
+                        <div className="flex items-center justify-center gap-1">
+                            <Clock className="w-3 h-3 text-neutral-400" />
+                            <div className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                                {currentTime.northAmerica}
                             </div>
                         </div>
-                    ))}
+                    </div>
+                    <div className="text-center">
+                        <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">Europe</div>
+                        <div className="flex items-center justify-center gap-1">
+                            <Clock className="w-3 h-3 text-neutral-400" />
+                            <div className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                                {currentTime.europe}
+                            </div>
+                        </div>
+                    </div>
+                    <div className="text-center">
+                        <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">Asia</div>
+                        <div className="flex items-center justify-center gap-1">
+                            <Clock className="w-3 h-3 text-neutral-400" />
+                            <div className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                                {currentTime.asia}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Compact Exchange Grid */}
+                <div className="grid grid-cols-4 sm:grid-cols-5 gap-3">
+                    {groupedExchanges.northAmerica.map((ex) => {
+                        const status = marketStatus.find((m) => m.exchange === ex);
+                        const isOpen = status?.status === "open";
+                        return (
+                            <div key={ex} className="flex flex-col items-center p-2 bg-neutral-50 dark:bg-neutral-900 rounded-lg">
+                                <span className="text-xs font-bold text-neutral-700 dark:text-neutral-300">{ex}</span>
+                                <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full mt-1 ${isOpen
+                                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                                        : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                                    }`}>
+                                    {isOpen ? "OPEN" : "CLOSED"}
+                                </span>
+                            </div>
+                        );
+                    })}
+                    {groupedExchanges.europe.map((ex) => {
+                        const status = marketStatus.find((m) => m.exchange === ex);
+                        const isOpen = status?.status === "open";
+                        return (
+                            <div key={ex} className="flex flex-col items-center p-2 bg-neutral-50 dark:bg-neutral-900 rounded-lg">
+                                <span className="text-xs font-bold text-neutral-700 dark:text-neutral-300">{ex}</span>
+                                <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full mt-1 ${isOpen
+                                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                                        : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                                    }`}>
+                                    {isOpen ? "OPEN" : "CLOSED"}
+                                </span>
+                            </div>
+                        );
+                    })}
+                    {groupedExchanges.asia.map((ex) => {
+                        const status = marketStatus.find((m) => m.exchange === ex);
+                        const isOpen = status?.status === "open";
+                        return (
+                            <div key={ex} className="flex flex-col items-center p-2 bg-neutral-50 dark:bg-neutral-900 rounded-lg">
+                                <span className="text-xs font-bold text-neutral-700 dark:text-neutral-300">{ex}</span>
+                                <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full mt-1 ${isOpen
+                                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                                        : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                                    }`}>
+                                    {isOpen ? "OPEN" : "CLOSED"}
+                                </span>
+                            </div>
+                        );
+                    })}
                 </div>
             </CardContent>
         </Card>
