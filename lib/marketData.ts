@@ -1,4 +1,5 @@
 import { MarketMoversData, StockMover } from "@/types/market";
+import { MOCK_GAINERS, MOCK_LOSERS } from "./mockData";
 
 const CACHE_DURATION_MS = 60 * 1000; // 60 seconds
 let marketMoversCache: { data: MarketMoversData | null; timestamp: number } = {
@@ -29,7 +30,19 @@ function isMarketOpen(): boolean {
 /**
  * Fetch top gainers and losers from Alpha Vantage
  */
-export async function fetchMarketMovers(): Promise<MarketMoversData | null> {
+export async function fetchMarketMovers(isTestMode: boolean = false): Promise<MarketMoversData | null> {
+    // Return mock data immediately if in test mode
+    if (isTestMode) {
+        console.log("🧪 Test Mode: Returning mock market movers");
+        return {
+            metadata: "Test Mode Data",
+            last_updated: new Date().toISOString(),
+            top_gainers: MOCK_GAINERS,
+            top_losers: MOCK_LOSERS,
+            most_actively_traded: []
+        };
+    }
+
     // Check cache first
     const now = Date.now();
     if (marketMoversCache.data && now - marketMoversCache.timestamp < CACHE_DURATION_MS) {
@@ -80,8 +93,8 @@ export async function fetchMarketMovers(): Promise<MarketMoversData | null> {
 /**
  * Get top N gainers
  */
-export async function fetchTopGainers(limit: number = 10): Promise<StockMover[]> {
-    const data = await fetchMarketMovers();
+export async function fetchTopGainers(limit: number = 10, isTestMode: boolean = false): Promise<StockMover[]> {
+    const data = await fetchMarketMovers(isTestMode);
     if (!data || !data.top_gainers) return [];
     return data.top_gainers.slice(0, limit);
 }
@@ -89,8 +102,8 @@ export async function fetchTopGainers(limit: number = 10): Promise<StockMover[]>
 /**
  * Get top N losers
  */
-export async function fetchTopLosers(limit: number = 10): Promise<StockMover[]> {
-    const data = await fetchMarketMovers();
+export async function fetchTopLosers(limit: number = 10, isTestMode: boolean = false): Promise<StockMover[]> {
+    const data = await fetchMarketMovers(isTestMode);
     if (!data || !data.top_losers) return [];
     return data.top_losers.slice(0, limit);
 }

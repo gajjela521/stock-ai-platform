@@ -1,6 +1,7 @@
 import { ALPHA_VANTAGE_BASE_URL, ALPHA_VANTAGE_FUNCTIONS, CACHE_DURATION_MS } from "./alphaVantageConstants";
 import { BasketStock, BasketCalculation, StockBreakdown, HistoricalPriceData, TimePeriod } from "@/types/basket";
 import { canMakeRequest, recordAPIRequest } from "./apiUsageTracker";
+import { getMockBasketCalculation } from "./mockData";
 
 // Extended cache duration for historical data (24 hours since it doesn't change)
 const HISTORICAL_CACHE_DURATION_MS = 24 * 60 * 60 * 1000;
@@ -167,8 +168,16 @@ export async function fetchHistoricalPrice(symbol: string, timePeriod: TimePerio
  */
 export async function calculateBasketReturns(
     stocks: BasketStock[],
-    timePeriod: TimePeriod
+    timePeriod: TimePeriod,
+    isTestMode: boolean = false
 ): Promise<BasketCalculation> {
+    // Return mock data immediately if in test mode
+    if (isTestMode) {
+        console.log("🧪 Test Mode: Calculating mock basket returns");
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate delay
+        return getMockBasketCalculation(stocks, timePeriod);
+    }
+
     // Validate input
     if (stocks.length !== 5) {
         throw new Error("VALIDATION_ERROR: Must select exactly 5 stocks (one from each category)");

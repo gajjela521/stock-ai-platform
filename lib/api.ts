@@ -4,6 +4,7 @@ import {
 } from "@/types";
 import { RATE_LIMIT } from "./constants";
 import { fetchStockDataFromAlphaVantage } from "./alphaVantageApi";
+import { getMockStockAnalysis } from "./mockData";
 
 // ============================================================================
 // RATE LIMITING
@@ -32,7 +33,15 @@ function checkRateLimit(): boolean {
 // EXPORT
 // ============================================================================
 
-export async function fetchStockAnalysis(symbol: string): Promise<FullAnalysis | null> {
+export async function fetchStockAnalysis(symbol: string, isTestMode: boolean = false): Promise<FullAnalysis | null> {
+    // Return mock data immediately if in test mode
+    if (isTestMode) {
+        console.log(`🧪 Test Mode: Returning mock data for ${symbol}`);
+        // Simulate network delay
+        await new Promise(resolve => setTimeout(resolve, 800));
+        return getMockStockAnalysis(symbol);
+    }
+
     if (!checkRateLimit()) {
         throw new Error("RATE_LIMIT_EXCEEDED");
     }

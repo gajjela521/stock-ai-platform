@@ -9,18 +9,22 @@ import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { FullAnalysis } from "@/types";
 
+import { useTestMode } from "@/contexts/TestModeContext";
+
 function AnalysisContent() {
     const searchParams = useSearchParams();
     const symbol = searchParams.get("symbol");
     const [data, setData] = useState<FullAnalysis | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const { isTestMode } = useTestMode();
 
     useEffect(() => {
         const loadData = async () => {
             if (symbol) {
                 try {
-                    const result = await fetchStockAnalysis(symbol);
+                    setLoading(true);
+                    const result = await fetchStockAnalysis(symbol, isTestMode);
                     setData(result);
                 } catch (err: any) {
                     if (err.message === "RATE_LIMIT_EXCEEDED") {
@@ -33,7 +37,7 @@ function AnalysisContent() {
             setLoading(false);
         };
         loadData();
-    }, [symbol]);
+    }, [symbol, isTestMode]);
 
     if (loading) {
         return (

@@ -9,6 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/Card";
 import { Input } from "./ui/Input";
 import { BasketResults } from "./BasketResults";
 
+import { useTestMode } from "@/contexts/TestModeContext";
+
 export function BasketBuilder() {
     const [selectedStocks, setSelectedStocks] = useState<Record<string, { symbol: string; name: string }>>({});
     const [shares, setShares] = useState<Record<string, number>>({});
@@ -16,6 +18,7 @@ export function BasketBuilder() {
     const [calculation, setCalculation] = useState<BasketCalculation | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const { isTestMode } = useTestMode();
 
     const handleStockSelect = (category: string, symbol: string, name: string) => {
         setSelectedStocks(prev => ({ ...prev, [category]: { symbol, name } }));
@@ -62,7 +65,7 @@ export function BasketBuilder() {
         setLoading(true);
 
         try {
-            const result = await calculateBasketReturns(basketStocks, timePeriod);
+            const result = await calculateBasketReturns(basketStocks, timePeriod, isTestMode);
             setCalculation(result);
         } catch (err: any) {
             console.error("Basket calculation error:", err);
@@ -151,8 +154,8 @@ export function BasketBuilder() {
                                     key={value}
                                     onClick={() => setTimePeriod(value)}
                                     className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${timePeriod === value
-                                            ? 'bg-blue-600 text-white shadow-lg'
-                                            : 'bg-neutral-200 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-300 dark:hover:bg-neutral-700'
+                                        ? 'bg-blue-600 text-white shadow-lg'
+                                        : 'bg-neutral-200 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-300 dark:hover:bg-neutral-700'
                                         }`}
                                 >
                                     {label}

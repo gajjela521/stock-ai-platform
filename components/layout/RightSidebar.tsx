@@ -6,18 +6,21 @@ import { fetchTopGainers, fetchTopLosers } from "@/lib/marketData";
 import { StockDataGrid } from "../StockDataGrid";
 import { TrendingUp, TrendingDown, RefreshCw } from "lucide-react";
 
+import { useTestMode } from "@/contexts/TestModeContext";
+
 export function RightSidebar() {
     const [gainers, setGainers] = useState<StockMover[]>([]);
     const [losers, setLosers] = useState<StockMover[]>([]);
     const [loading, setLoading] = useState(true);
     const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+    const { isTestMode } = useTestMode();
 
     const loadData = async () => {
         try {
             setLoading(true);
             const [gainersData, losersData] = await Promise.all([
-                fetchTopGainers(10),
-                fetchTopLosers(10)
+                fetchTopGainers(10, isTestMode),
+                fetchTopLosers(10, isTestMode)
             ]);
             setGainers(gainersData);
             setLosers(losersData);
@@ -36,7 +39,7 @@ export function RightSidebar() {
         const interval = setInterval(loadData, 60000);
 
         return () => clearInterval(interval);
-    }, []);
+    }, [isTestMode]);
 
     return (
         <aside className="w-80 bg-neutral-50 dark:bg-neutral-900 border-l border-neutral-200 dark:border-neutral-800 flex flex-col overflow-y-auto">

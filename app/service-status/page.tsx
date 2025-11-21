@@ -2,18 +2,20 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Home, RefreshCw, Activity, CheckCircle, XCircle, AlertCircle, Clock } from "lucide-react";
+import { Home, RefreshCw, Activity, CheckCircle, XCircle, AlertCircle, Clock, TestTube } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { checkServiceHealth, getStatusColor, getOverallStatusColor } from "@/lib/serviceHealth";
 import { ServiceHealth } from "@/types/service";
+import { useTestMode } from "@/contexts/TestModeContext";
 
 export default function ServiceStatusPage() {
     const router = useRouter();
     const [health, setHealth] = useState<ServiceHealth | null>(null);
     const [loading, setLoading] = useState(true);
     const [autoRefresh, setAutoRefresh] = useState(false);
+    const { isTestMode, toggleTestMode } = useTestMode();
 
     const loadHealth = async () => {
         setLoading(true);
@@ -266,6 +268,49 @@ export default function ServiceStatusPage() {
                         </div>
                     </div>
                 ) : null}
+                {/* Test Mode Toggle - At Bottom */}
+                <Card className="border-2 border-orange-300 dark:border-orange-700">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <TestTube className="w-5 h-5 text-orange-600" />
+                            Test Mode
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-4">
+                            <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                                Enable test mode to use mock data for all features. This allows you to explore the platform without consuming API credits.
+                            </p>
+                            <div className="flex items-center justify-between p-4 bg-neutral-100 dark:bg-neutral-800 rounded-lg">
+                                <div>
+                                    <div className="font-semibold text-neutral-900 dark:text-white">
+                                        {isTestMode ? "Test Mode Enabled" : "Live Data Mode"}
+                                    </div>
+                                    <div className="text-xs text-neutral-600 dark:text-neutral-400">
+                                        {isTestMode ? "Using mock data for all features" : "Using live API data"}
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={toggleTestMode}
+                                    className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${isTestMode ? 'bg-orange-600' : 'bg-neutral-300 dark:bg-neutral-700'
+                                        }`}
+                                >
+                                    <span
+                                        className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${isTestMode ? 'translate-x-7' : 'translate-x-1'
+                                            }`}
+                                    />
+                                </button>
+                            </div>
+                            {isTestMode && (
+                                <div className="p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg">
+                                    <p className="text-xs text-orange-700 dark:text-orange-300">
+                                        <strong>⚠️ Warning:</strong> Test mode is enabled. All data shown is mock data for demonstration purposes only.
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
         </div>
     );
