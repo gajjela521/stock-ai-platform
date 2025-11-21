@@ -1,6 +1,20 @@
 import { FMP_BASE_URL, FMP_ENDPOINTS } from "./constants";
 import { APIEndpointStatus, ServiceHealth } from "@/types/service";
 
+// Helper to redact API key from URL
+function redactApiKey(url: string): string {
+    try {
+        const urlObj = new URL(url);
+        if (urlObj.searchParams.has("apikey")) {
+            urlObj.searchParams.set("apikey", "REDACTED");
+        }
+        return urlObj.toString();
+    } catch (e) {
+        // If URL parsing fails, try simple string replacement
+        return url.replace(/apikey=[^&]*/, "apikey=REDACTED");
+    }
+}
+
 // Check individual endpoint health
 async function checkEndpoint(
     name: string,
@@ -8,6 +22,7 @@ async function checkEndpoint(
     timeout: number = 5000
 ): Promise<APIEndpointStatus> {
     const startTime = Date.now();
+    const redactedUrl = redactApiKey(url);
 
     try {
         const controller = new AbortController();
@@ -25,7 +40,7 @@ async function checkEndpoint(
             const errorText = await response.text();
             return {
                 name,
-                endpoint: url,
+                endpoint: redactedUrl,
                 status: "inactive",
                 responseTime,
                 lastChecked: new Date(),
@@ -40,7 +55,7 @@ async function checkEndpoint(
         if (data.Error || data.error || data["Error Message"]) {
             return {
                 name,
-                endpoint: url,
+                endpoint: redactedUrl,
                 status: "inactive",
                 responseTime,
                 lastChecked: new Date(),
@@ -51,7 +66,7 @@ async function checkEndpoint(
 
         return {
             name,
-            endpoint: url,
+            endpoint: redactedUrl,
             status: responseTime > 2000 ? "degraded" : "active",
             responseTime,
             lastChecked: new Date(),
@@ -60,7 +75,7 @@ async function checkEndpoint(
         const responseTime = Date.now() - startTime;
         return {
             name,
-            endpoint: url,
+            endpoint: redactedUrl,
             status: "inactive",
             responseTime,
             lastChecked: new Date(),
