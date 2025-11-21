@@ -8,7 +8,7 @@ interface TopHeaderProps {
 
 export function TopHeader({ onToggleLeftSidebar, onToggleRightSidebar }: TopHeaderProps) {
     return (
-        <header className="h-16 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 px-4 md:px-6 flex items-center justify-between sticky top-0 z-40">
+        <header className="fixed top-0 left-0 right-0 h-16 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 px-4 md:px-6 flex items-center justify-between z-40">
             <div className="flex items-center gap-3">
                 {/* Mobile Menu Button */}
                 <button

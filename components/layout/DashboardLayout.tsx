@@ -17,7 +17,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
     return (
         <TestModeProvider>
-            <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex flex-col">
+            <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex flex-col pt-16">
                 {/* Top Header */}
                 <TopHeader
                     onToggleLeftSidebar={() => setIsLeftSidebarOpen(!isLeftSidebarOpen)}
