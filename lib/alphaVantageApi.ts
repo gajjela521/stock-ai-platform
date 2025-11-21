@@ -37,10 +37,10 @@ async function fetchAlphaVantage(params: Record<string, string>): Promise<any> {
         return cached;
     }
 
-    // Check if we can make a request
+    // Check if we can make a request (client-side limit)
     const usageCheck = canMakeRequest();
     if (!usageCheck.allowed) {
-        console.warn(`⚠️ ${usageCheck.reason}. Reset in ${usageCheck.resetIn}s`);
+        console.warn(`⚠️ Client-side limit: ${usageCheck.reason}. Reset in ${usageCheck.resetIn}s`);
         throw new Error(`API_LIMIT_EXCEEDED: ${usageCheck.reason}`);
     }
 
@@ -48,34 +48,43 @@ async function fetchAlphaVantage(params: Record<string, string>): Promise<any> {
         console.log("🔄 Fetching from Alpha Vantage:", params.function, params.symbol);
         const response = await fetch(url.toString());
 
-        // Record the API request
-        recordAPIRequest();
-
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
 
         const data = await response.json();
 
-        // Check for API errors
+        // Check for API errors BEFORE recording the request
         if (data["Error Message"]) {
+            console.error("❌ Alpha Vantage API error:", data["Error Message"]);
             throw new Error(data["Error Message"]);
         }
 
+        // Check for rate limit from Alpha Vantage (server-side limit)
         if (data["Note"]) {
-            // Rate limit message from Alpha Vantage
-            console.warn("⚠️ Alpha Vantage rate limit:", data["Note"]);
-            return null;
+            console.warn("⚠️ Alpha Vantage rate limit hit:", data["Note"]);
+            throw new Error(
+                "ALPHA_VANTAGE_RATE_LIMIT: Alpha Vantage API limit reached. " +
+                "Wait 1 minute (per-minute limit) or until tomorrow (daily limit). " +
+                "Or get a new API key from https://www.alphavantage.co/support/#api-key"
+            );
         }
+
+        // Only record the request if it was successful
+        recordAPIRequest();
 
         setCache(cacheKey, data);
         console.log("✅ Data fetched and cached successfully");
         return data;
-    } catch (error) {
+    } catch (error: any) {
         console.error("❌ Alpha Vantage API error:", error);
+
+        // If it's a rate limit error from Alpha Vantage, don't record the request
+        // For other errors, we already didn't record it since we only record on success
         throw error;
     }
 }
+
 
 export async function fetchStockDataFromAlphaVantage(symbol: string): Promise<FullAnalysis | null> {
     try {

@@ -37,10 +37,17 @@ export function getAPIUsage(): APIUsage {
 
     // Clean up old minute requests (older than 1 minute)
     const oneMinuteAgo = Date.now() - 60 * 1000;
+    const oldLength = usage.minuteRequests.length;
     usage.minuteRequests = usage.minuteRequests.filter(time => time > oneMinuteAgo);
+
+    // Save back to localStorage if we cleaned up any old requests
+    if (oldLength !== usage.minuteRequests.length) {
+        localStorage.setItem(USAGE_STORAGE_KEY, JSON.stringify(usage));
+    }
 
     return usage;
 }
+
 
 export function canMakeRequest(): { allowed: boolean; reason?: string; resetIn?: number } {
     const usage = getAPIUsage();
@@ -85,6 +92,25 @@ export function recordAPIRequest(): void {
 
     localStorage.setItem(USAGE_STORAGE_KEY, JSON.stringify(usage));
 }
+
+export function undoAPIRequest(): void {
+    if (typeof window === "undefined") return;
+
+    const usage = getAPIUsage();
+
+    // Remove the last request if it exists
+    if (usage.dailyCount > 0) {
+        usage.dailyCount--;
+    }
+
+    // Remove the most recent minute request
+    if (usage.minuteRequests.length > 0) {
+        usage.minuteRequests.pop();
+    }
+
+    localStorage.setItem(USAGE_STORAGE_KEY, JSON.stringify(usage));
+}
+
 
 export function getUsageStats(): {
     dailyUsed: number;

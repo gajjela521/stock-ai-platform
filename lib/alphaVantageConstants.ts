@@ -17,5 +17,5 @@ export const ALPHA_VANTAGE_RATE_LIMIT = {
     REQUESTS_PER_DAY: 25,
 } as const;
 
-// Cache duration (5 minutes to minimize API calls)
-export const CACHE_DURATION_MS = 5 * 60 * 1000;
+// Cache duration (30 minutes to minimize API calls and avoid rate limits)
+export const CACHE_DURATION_MS = 30 * 60 * 1000;

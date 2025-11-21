@@ -58,8 +58,18 @@ export async function fetchStockAnalysis(symbol: string): Promise<FullAnalysis |
     } catch (error: any) {
         console.error("❌ Alpha Vantage fetch failed:", error);
 
-        // Re-throw API limit errors
+        // Handle different error types with specific messages
         if (error.message?.includes("API_LIMIT_EXCEEDED")) {
+            // Client-side rate limit (our tracker)
+            throw new Error("RATE_LIMIT_EXCEEDED: You've reached the request limit. Please wait a moment before trying again.");
+        }
+
+        if (error.message?.includes("ALPHA_VANTAGE_RATE_LIMIT")) {
+            // Server-side rate limit (Alpha Vantage)
+            throw new Error("RATE_LIMIT_EXCEEDED: Alpha Vantage API limit reached. Please wait 1 minute before searching again.");
+        }
+
+        if (error.message?.includes("API_KEY_NOT_CONFIGURED")) {
             throw error;
         }
 

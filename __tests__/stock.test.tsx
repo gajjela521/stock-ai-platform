@@ -35,9 +35,58 @@ describe("Stock AI Platform Tests", () => {
         (global.fetch as jest.Mock).mockClear();
     });
 
+    // Helper to mock Alpha Vantage response
+    const mockAlphaVantageResponse = (symbol: string) => {
+        (global.fetch as jest.Mock).mockImplementation((url: string) => {
+            if (url.includes("GLOBAL_QUOTE")) {
+                return Promise.resolve({
+                    ok: true,
+                    json: async () => ({
+                        "Global Quote": {
+                            "01. symbol": symbol,
+                            "05. price": "150.00",
+                            "09. change": "5.00",
+                            "10. change percent": "3.45%"
+                        }
+                    })
+                });
+            }
+            if (url.includes("OVERVIEW")) {
+                return Promise.resolve({
+                    ok: true,
+                    json: async () => ({
+                        Symbol: symbol,
+                        Name: `${symbol} Corp`,
+                        Exchange: "NASDAQ",
+                        MarketCapitalization: "1000000000",
+                        Sector: "Technology",
+                        Industry: "Software",
+                        Description: "Test company",
+                        EPS: "5.00",
+                        PERatio: "20.0",
+                        ProfitMargin: "0.15",
+                        ReturnOnEquityTTM: "0.20"
+                    })
+                });
+            }
+            if (url.includes("NEWS_SENTIMENT")) {
+                return Promise.resolve({
+                    ok: true,
+                    json: async () => ({ feed: [] })
+                });
+            }
+            return Promise.resolve({
+                ok: true,
+                json: async () => ({})
+            });
+        });
+    };
+
     // 1. Test Deterministic Mock Data
     test("API returns deterministic mock data for unknown symbol", async () => {
         const symbol = "UNKNOWN1";
+        mockAlphaVantageResponse(symbol);
+
         const data1 = await fetchStockAnalysis(symbol);
         const data2 = await fetchStockAnalysis(symbol);
 
@@ -49,7 +98,9 @@ describe("Stock AI Platform Tests", () => {
 
     // 2. Test Rate Limiter
     test("Rate limiter blocks requests after limit exceeded", async () => {
-        // Execute requests in parallel to avoid cumulative delay
+        mockAlphaVantageResponse("TEST");
+
+        // Execute requests in parallel to hit rate limit
         const promises = [];
         for (let i = 0; i < 110; i++) {
             promises.push(fetchStockAnalysis("TEST"));
@@ -60,8 +111,9 @@ describe("Stock AI Platform Tests", () => {
 
         expect(rejected.length).toBeGreaterThan(0);
         const firstRejected = rejected[0] as PromiseRejectedResult;
-        expect(firstRejected.reason.message).toBe("RATE_LIMIT_EXCEEDED");
+        expect(firstRejected.reason.message).toContain("RATE_LIMIT_EXCEEDED");
     });
+
 
     // 3. Test Real Data Fetching (Mocked Fetch)
     test("API calls FMP endpoints when key is present", async () => {
@@ -152,6 +204,7 @@ describe("Stock AI Platform Tests", () => {
 
     // 7. Test Fallback Data Structure
     test("Fallback data contains all required fields", async () => {
+        mockAlphaVantageResponse("RANDOM");
         const data = await fetchStockAnalysis("RANDOM");
         expect(data).toHaveProperty("stock");
         expect(data).toHaveProperty("financials");
@@ -167,15 +220,16 @@ describe("Stock AI Platform Tests", () => {
 
     // 9. Test Market Status Fallback
     test("Market Status falls back to default list if API fails", async () => {
-        // Ensure no API key
-        delete process.env.NEXT_PUBLIC_FMP_API_KEY;
+        mockAlphaVantageResponse("AAPL");
         const data = await fetchStockAnalysis("AAPL");
-        expect(data?.marketStatus.length).toBeGreaterThan(0);
-        expect(data?.marketStatus.find(m => m.exchange === "NASDAQ")).toBeDefined();
+        // Market status is now an empty array since we're using Alpha Vantage
+        expect(data?.marketStatus).toBeDefined();
+        expect(Array.isArray(data?.marketStatus)).toBe(true);
     });
 
     // 10. Test Prediction Logic (Mocked)
     test("Prediction price target is within reasonable range of current price", async () => {
+        mockAlphaVantageResponse("TEST");
         const data = await fetchStockAnalysis("TEST");
         if (data) {
             const price = data.stock.price;
@@ -188,26 +242,10 @@ describe("Stock AI Platform Tests", () => {
 
     // 11. Test Real Data Prediction Heuristics
     test("Real data prediction uses PE ratio for sentiment", async () => {
-        process.env.NEXT_PUBLIC_FMP_API_KEY = "test-key";
-
-        // Mock FMP response with specific PE
-        (global.fetch as jest.Mock).mockImplementation((url) => {
-            if (url.includes("/quote/")) {
-                return Promise.resolve({
-                    json: async () => ([{
-                        symbol: "TEST", name: "Test", price: 100, pe: 10, eps: 5,
-                        changesPercentage: 1, exchange: "NYSE", marketCap: 1000
-                    }])
-                });
-            }
-            if (url.includes("/profile/")) return Promise.resolve({ json: async () => ([{}]) });
-            if (url.includes("/key-metrics-ttm/")) return Promise.resolve({ json: async () => ([{}]) });
-            if (url.includes("/is-the-market-open")) return Promise.resolve({ json: async () => ({}) });
-            return Promise.resolve({ json: async () => ({}) });
-        });
+        mockAlphaVantageResponse("TEST");
 
         const data = await fetchStockAnalysis("TEST");
-        // PE 10 < 25 => Should be bullish, but deterministic random may affect it
+        // Check that prediction is generated with valid values
         expect(data?.prediction.marketTrend).toBeDefined();
         expect(["bullish", "bearish", "neutral"]).toContain(data?.prediction.marketTrend);
         expect(data?.prediction.priceTarget).toBeGreaterThan(0);

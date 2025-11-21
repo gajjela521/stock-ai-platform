@@ -4,3 +4,6 @@
 // Used for __tests__/testing-library.js
 // Learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom'
+
+// Set up test environment variables
+process.env.NEXT_PUBLIC_ALPHA_VANTAGE_API_KEY = 'test-alpha-vantage-key';
