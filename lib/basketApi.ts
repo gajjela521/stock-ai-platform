@@ -21,11 +21,17 @@ function setHistoricalCache(key: string, data: any): void {
     historicalCache.set(key, { data, timestamp: Date.now() });
 }
 
-// Map time periods to trading days
+// Map time periods to trading days (approximately 252 trading days per year)
 const TRADING_DAYS: Record<TimePeriod, number> = {
-    '1M': 21,   // ~1 month
-    '6M': 126,  // ~6 months
-    '1Y': 252   // ~1 year
+    '1M': 21,      // ~1 month
+    '3M': 63,      // ~3 months
+    '6M': 126,     // ~6 months
+    '1Y': 252,     // ~1 year
+    '2Y': 504,     // ~2 years
+    '3Y': 756,     // ~3 years
+    '4Y': 1008,    // ~4 years
+    '5Y': 1260,    // ~5 years
+    '10Y': 2520    // ~10 years
 };
 
 /**
@@ -209,11 +215,15 @@ export async function calculateBasketReturns(
     const totalReturn = currentValue - historicalValue;
     const returnPercentage = (totalReturn / historicalValue) * 100;
 
+    // Get the historical date from the first stock's data
+    const fromDate = priceData[0].date;
+
     console.log(`✅ Basket calculation complete. Total return: ${returnPercentage.toFixed(2)}%`);
 
     return {
         stocks,
         timePeriod,
+        fromDate,
         currentValue,
         historicalValue,
         totalReturn,

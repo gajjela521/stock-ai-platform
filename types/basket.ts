@@ -1,6 +1,6 @@
 // Basket Portfolio Calculator Types
 
-export type TimePeriod = '1M' | '6M' | '1Y';
+export type TimePeriod = '1M' | '3M' | '6M' | '1Y' | '2Y' | '3Y' | '4Y' | '5Y' | '10Y';
 
 export type StockCategory = 'Technology' | 'Finance' | 'Healthcare' | 'Consumer' | 'Energy';
 
@@ -35,6 +35,7 @@ export interface StockBreakdown {
 export interface BasketCalculation {
     stocks: BasketStock[];
     timePeriod: TimePeriod;
+    fromDate: string; // The historical date used for calculation
     currentValue: number;
     historicalValue: number;
     totalReturn: number;

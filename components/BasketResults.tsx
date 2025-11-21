@@ -30,9 +30,23 @@ export function BasketResults({ calculation }: BasketResultsProps) {
 
     const timePeriodLabel = {
         '1M': '1 Month',
+        '3M': '3 Months',
         '6M': '6 Months',
-        '1Y': '1 Year'
+        '1Y': '1 Year',
+        '2Y': '2 Years',
+        '3Y': '3 Years',
+        '4Y': '4 Years',
+        '5Y': '5 Years',
+        '10Y': '10 Years'
     }[calculation.timePeriod];
+
+    const formatDate = (dateString: string) => {
+        return new Date(dateString).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    };
 
     return (
         <div className="space-y-6">
@@ -40,19 +54,22 @@ export function BasketResults({ calculation }: BasketResultsProps) {
             <Card>
                 <CardHeader>
                     <CardTitle>Portfolio Performance - {timePeriodLabel}</CardTitle>
+                    <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                        From {formatDate(calculation.fromDate)} to Today
+                    </p>
                 </CardHeader>
                 <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-4">
                             <div>
-                                <div className="text-sm text-neutral-600 dark:text-neutral-400">Current Value</div>
+                                <div className="text-sm text-neutral-600 dark:text-neutral-400">Current Value (Today)</div>
                                 <div className="text-3xl font-bold text-neutral-900 dark:text-white">
                                     {formatCurrency(calculation.currentValue)}
                                 </div>
                             </div>
                             <div>
                                 <div className="text-sm text-neutral-600 dark:text-neutral-400">
-                                    If Invested {timePeriodLabel} Ago
+                                    Value on {formatDate(calculation.fromDate)}
                                 </div>
                                 <div className="text-2xl font-semibold text-neutral-700 dark:text-neutral-300">
                                     {formatCurrency(calculation.historicalValue)}

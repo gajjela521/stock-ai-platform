@@ -133,24 +133,35 @@ export function BasketBuilder() {
                     {/* Time Period Selection */}
                     <div className="space-y-2">
                         <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">
-                            Time Period
+                            Time Period (From Date to Today)
                         </label>
-                        <div className="flex gap-3">
-                            {(['1M', '6M', '1Y'] as TimePeriod[]).map(period => (
+                        <div className="grid grid-cols-3 md:grid-cols-5 gap-2">
+                            {([
+                                { value: '1M', label: '1 Month' },
+                                { value: '3M', label: '3 Months' },
+                                { value: '6M', label: '6 Months' },
+                                { value: '1Y', label: '1 Year' },
+                                { value: '2Y', label: '2 Years' },
+                                { value: '3Y', label: '3 Years' },
+                                { value: '4Y', label: '4 Years' },
+                                { value: '5Y', label: '5 Years' },
+                                { value: '10Y', label: '10 Years' }
+                            ] as { value: TimePeriod; label: string }[]).map(({ value, label }) => (
                                 <button
-                                    key={period}
-                                    onClick={() => setTimePeriod(period)}
-                                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${timePeriod === period
-                                            ? 'bg-blue-600 text-white'
+                                    key={value}
+                                    onClick={() => setTimePeriod(value)}
+                                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${timePeriod === value
+                                            ? 'bg-blue-600 text-white shadow-lg'
                                             : 'bg-neutral-200 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-300 dark:hover:bg-neutral-700'
                                         }`}
                                 >
-                                    {period === '1M' && '1 Month'}
-                                    {period === '6M' && '6 Months'}
-                                    {period === '1Y' && '1 Year'}
+                                    {label}
                                 </button>
                             ))}
                         </div>
+                        <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                            Returns calculated from the selected period ago to today's date
+                        </p>
                     </div>
 
                     {/* Error Message */}
