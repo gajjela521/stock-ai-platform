@@ -1,14 +1,17 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import { StockMover } from "@/types/market";
 import { fetchTopGainers, fetchTopLosers } from "@/lib/marketData";
 import { StockDataGrid } from "../StockDataGrid";
-import { TrendingUp, TrendingDown, RefreshCw } from "lucide-react";
+import { TrendingUp, TrendingDown, RefreshCw, X } from "lucide-react";
 
 import { useTestMode } from "@/contexts/TestModeContext";
 
-export function RightSidebar() {
+interface RightSidebarProps {
+    isOpen?: boolean;
+    onClose?: () => void;
+}
+
+export function RightSidebar({ isOpen = false, onClose }: RightSidebarProps) {
     const [gainers, setGainers] = useState<StockMover[]>([]);
     const [losers, setLosers] = useState<StockMover[]>([]);
     const [loading, setLoading] = useState(true);
@@ -42,20 +45,33 @@ export function RightSidebar() {
     }, [isTestMode]);
 
     return (
-        <aside className="w-80 bg-neutral-50 dark:bg-neutral-900 border-l border-neutral-200 dark:border-neutral-800 flex flex-col overflow-y-auto">
+        <aside
+            className={`
+                fixed inset-y-0 right-0 z-50 w-80 bg-neutral-50 dark:bg-neutral-900 border-l border-neutral-200 dark:border-neutral-800 flex flex-col overflow-y-auto transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:inset-auto
+                ${isOpen ? 'translate-x-0' : 'translate-x-full'}
+            `}
+        >
             <div className="sticky top-0 bg-neutral-50 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 p-4 z-10">
                 <div className="flex items-center justify-between mb-2">
                     <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
                         Market Movers
                     </h2>
-                    <button
-                        onClick={loadData}
-                        disabled={loading}
-                        className="p-2 hover:bg-neutral-200 dark:hover:bg-neutral-800 rounded-lg transition-colors disabled:opacity-50"
-                        title="Refresh data"
-                    >
-                        <RefreshCw className={`w-4 h-4 text-neutral-600 dark:text-neutral-400 ${loading ? 'animate-spin' : ''}`} />
-                    </button>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={loadData}
+                            disabled={loading}
+                            className="p-2 hover:bg-neutral-200 dark:hover:bg-neutral-800 rounded-lg transition-colors disabled:opacity-50"
+                            title="Refresh data"
+                        >
+                            <RefreshCw className={`w-4 h-4 text-neutral-600 dark:text-neutral-400 ${loading ? 'animate-spin' : ''}`} />
+                        </button>
+                        <button
+                            onClick={onClose}
+                            className="md:hidden p-2 hover:bg-neutral-200 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+                        >
+                            <X className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
+                        </button>
+                    </div>
                 </div>
                 {lastUpdated && (
                     <p className="text-xs text-neutral-500 dark:text-neutral-400">
