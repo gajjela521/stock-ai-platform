@@ -58,9 +58,9 @@ export default function MarketOverviewPage() {
     }, []);
 
     return (
-        <div className="fixed inset-0 bg-neutral-50 dark:bg-neutral-950">
+        <div className="relative h-full flex flex-col bg-neutral-50 dark:bg-neutral-950">
             {/* Header */}
-            <div className="absolute top-0 left-0 right-0 z-10 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 px-6 py-4 flex items-center justify-between">
+            <div className="flex-none bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 px-6 py-4 flex items-center justify-between z-10">
                 <div>
                     <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
                         USA Market Overview
@@ -95,7 +95,7 @@ export default function MarketOverviewPage() {
             {/* Treemap Container */}
             <div
                 ref={containerRef}
-                className="absolute top-[73px] left-0 right-0 bottom-0 overflow-hidden"
+                className="flex-1 relative overflow-hidden"
             >
                 {loading && (
                     <div className="flex items-center justify-center h-full">
