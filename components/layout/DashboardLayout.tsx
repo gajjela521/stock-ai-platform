@@ -37,7 +37,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     {/* Mobile Backdrop */}
                     {(isLeftSidebarOpen || isRightSidebarOpen) && (
                         <div
-                            className="fixed inset-0 bg-black/50 z-40 md:hidden"
+                            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
                             onClick={() => {
                                 handleCloseLeftSidebar();
                                 handleCloseRightSidebar();
@@ -52,7 +52,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     />
 
                     {/* Main Content */}
-                    <main className="flex-1 overflow-y-auto w-full">
+                    <main className="flex-1 overflow-y-auto w-full min-w-0">
                         {children}
                     </main>
 

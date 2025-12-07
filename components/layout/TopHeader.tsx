@@ -13,7 +13,7 @@ export function TopHeader({ onToggleLeftSidebar, onToggleRightSidebar }: TopHead
                 {/* Mobile Menu Button */}
                 <button
                     onClick={onToggleLeftSidebar}
-                    className="md:hidden p-2 -ml-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+                    className="lg:hidden p-2 -ml-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
                 >
                     <Menu className="w-6 h-6 text-neutral-600 dark:text-neutral-400" />
                 </button>
@@ -48,7 +48,7 @@ export function TopHeader({ onToggleLeftSidebar, onToggleRightSidebar }: TopHead
                 {/* Mobile Right Sidebar Toggle */}
                 <button
                     onClick={onToggleRightSidebar}
-                    className="md:hidden p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+                    className="lg:hidden p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
                 >
                     <Activity className="w-6 h-6 text-neutral-600 dark:text-neutral-400" />
                 </button>

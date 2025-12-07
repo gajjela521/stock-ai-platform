@@ -56,7 +56,7 @@ export function RightSidebar({ isOpen = false, onClose }: RightSidebarProps) {
     return (
         <aside
             className={`
-                fixed inset-y-0 right-0 z-50 w-80 bg-neutral-50 dark:bg-neutral-900 border-l border-neutral-200 dark:border-neutral-800 flex flex-col overflow-y-auto transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:inset-auto
+                fixed inset-y-0 right-0 z-50 w-80 bg-neutral-50 dark:bg-neutral-900 border-l border-neutral-200 dark:border-neutral-800 flex flex-col overflow-y-auto transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-auto flex-shrink-0
                 ${isOpen ? 'translate-x-0' : 'translate-x-full'}
             `}
         >

@@ -69,7 +69,7 @@ export function LeftSidebar({ isOpen = false, onClose }: LeftSidebarProps) {
     return (
         <aside
             className={`
-                fixed inset-y-0 left-0 z-50 w-64 bg-neutral-900 dark:bg-neutral-950 border-r border-neutral-800 flex flex-col transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:inset-auto
+                fixed inset-y-0 left-0 z-50 w-64 bg-neutral-900 dark:bg-neutral-950 border-r border-neutral-800 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-auto flex-shrink-0
                 ${isOpen ? 'translate-x-0' : '-translate-x-full'}
             `}
         >
