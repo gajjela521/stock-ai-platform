@@ -6,7 +6,7 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Stock AI Platform",
+  title: "Perpendicular | AI Stock Analysis",
   description: "AI-powered stock analysis and prediction",
 };
 

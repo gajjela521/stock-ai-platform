@@ -24,13 +24,13 @@ export function TopHeader({ onToggleLeftSidebar, onToggleRightSidebar }: TopHead
                     </div>
                     <div>
                         <h1 className="text-xl font-serif font-bold text-neutral-900 dark:text-white hidden sm:block">
-                            AI Stock Analysis
+                            Perpendicular
                         </h1>
                         <h1 className="text-xl font-serif font-bold text-neutral-900 dark:text-white sm:hidden">
-                            Stock AI
+                            Perpendicular
                         </h1>
                         <p className="text-xs text-neutral-600 dark:text-neutral-400 hidden sm:block">
-                            Real-time market intelligence
+                            AI Stock Analysis
                         </p>
                     </div>
                 </Link>

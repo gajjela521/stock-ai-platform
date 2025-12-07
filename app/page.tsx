@@ -7,7 +7,7 @@ export default function Home() {
       <div className="container mx-auto px-4 py-16">
         <div className="text-center mb-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
           <h1 className="text-5xl md:text-6xl font-serif font-bold text-neutral-900 dark:text-white mb-4">
-            AI Stock Analysis
+            Perpendicular
           </h1>
           <p className="text-xl text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto">
             Advanced market intelligence powered by real-time data and AI-driven insights.

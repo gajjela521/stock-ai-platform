@@ -102,7 +102,7 @@ export function LeftSidebar({ isOpen = false, onClose }: LeftSidebarProps) {
             {/* Footer */}
             <div className="p-4 border-t border-neutral-800">
                 <div className="text-xs text-neutral-500 text-center">
-                    © 2025 AI Stock Analysis
+                    © 2025 Perpendicular
                 </div>
             </div>
         </aside>
