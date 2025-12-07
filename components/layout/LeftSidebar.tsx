@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { TrendingUp, Activity, ShoppingBasket, X } from "lucide-react";
@@ -31,6 +32,13 @@ interface LeftSidebarProps {
 
 export function LeftSidebar({ isOpen = false, onClose }: LeftSidebarProps) {
     const pathname = usePathname();
+
+    // Close sidebar when route changes
+    useEffect(() => {
+        if (isOpen && onClose) {
+            onClose();
+        }
+    }, [pathname, isOpen, onClose]);
 
     const renderNavItem = (item: typeof mainNavItems[0], isActive: boolean) => {
         const Icon = item.icon;

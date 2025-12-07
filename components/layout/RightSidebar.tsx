@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { StockMover } from "@/types/market";
 import { fetchTopGainers, fetchTopLosers } from "@/lib/marketData";
 import { StockDataGrid } from "../StockDataGrid";
@@ -17,6 +18,14 @@ export function RightSidebar({ isOpen = false, onClose }: RightSidebarProps) {
     const [loading, setLoading] = useState(true);
     const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
     const { isTestMode } = useTestMode();
+    const pathname = usePathname();
+
+    // Close sidebar when route changes
+    useEffect(() => {
+        if (isOpen && onClose) {
+            onClose();
+        }
+    }, [pathname, isOpen, onClose]);
 
     const loadData = async () => {
         try {

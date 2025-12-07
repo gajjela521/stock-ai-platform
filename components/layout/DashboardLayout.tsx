@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, useCallback } from "react";
 import { TopHeader } from "./TopHeader";
 import { LeftSidebar } from "./LeftSidebar";
 import { RightSidebar } from "./RightSidebar";
@@ -15,13 +15,18 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(false);
     const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
 
+    const handleCloseLeftSidebar = useCallback(() => setIsLeftSidebarOpen(false), []);
+    const handleCloseRightSidebar = useCallback(() => setIsRightSidebarOpen(false), []);
+    const handleToggleLeftSidebar = useCallback(() => setIsLeftSidebarOpen(prev => !prev), []);
+    const handleToggleRightSidebar = useCallback(() => setIsRightSidebarOpen(prev => !prev), []);
+
     return (
         <TestModeProvider>
             <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex flex-col pt-16">
                 {/* Top Header */}
                 <TopHeader
-                    onToggleLeftSidebar={() => setIsLeftSidebarOpen(!isLeftSidebarOpen)}
-                    onToggleRightSidebar={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
+                    onToggleLeftSidebar={handleToggleLeftSidebar}
+                    onToggleRightSidebar={handleToggleRightSidebar}
                 />
 
                 {/* Test Mode Banner */}
@@ -34,8 +39,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                         <div
                             className="fixed inset-0 bg-black/50 z-40 md:hidden"
                             onClick={() => {
-                                setIsLeftSidebarOpen(false);
-                                setIsRightSidebarOpen(false);
+                                handleCloseLeftSidebar();
+                                handleCloseRightSidebar();
                             }}
                         />
                     )}
@@ -43,7 +48,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     {/* Left Sidebar */}
                     <LeftSidebar
                         isOpen={isLeftSidebarOpen}
-                        onClose={() => setIsLeftSidebarOpen(false)}
+                        onClose={handleCloseLeftSidebar}
                     />
 
                     {/* Main Content */}
@@ -54,7 +59,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     {/* Right Sidebar */}
                     <RightSidebar
                         isOpen={isRightSidebarOpen}
-                        onClose={() => setIsRightSidebarOpen(false)}
+                        onClose={handleCloseRightSidebar}
                     />
                 </div>
             </div>
