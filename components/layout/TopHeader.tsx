@@ -19,8 +19,8 @@ export function TopHeader({ onToggleLeftSidebar, onToggleRightSidebar }: TopHead
                 </button>
 
                 <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
-                        <Home className="w-5 h-5 text-white" />
+                    <div className="w-10 h-10 flex items-center justify-center border border-neutral-200 dark:border-neutral-800 rounded-lg group-hover:bg-neutral-50 dark:group-hover:bg-neutral-800 transition-colors">
+                        <Home className="w-6 h-6 text-neutral-900 dark:text-white" />
                     </div>
                     <div>
                         <h1 className="text-xl font-serif font-bold text-neutral-900 dark:text-white hidden sm:block">
